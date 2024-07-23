@@ -1,23 +1,28 @@
+// RoomManager.tsx
 import React, { useState, useEffect } from "react";
 import { supabase } from "../lib/supabaseClient";
 
 interface Room {
   id: string;
   name: string;
+  language: string;
   created_at: string;
 }
 
 interface RoomManagerProps {
   currentRoom: string | null;
   setCurrentRoom: (roomId: string | null) => void;
+  setCurrentLanguage: (language: string) => void;
 }
 
 const RoomManager: React.FC<RoomManagerProps> = ({
   currentRoom,
   setCurrentRoom,
+  setCurrentLanguage,
 }) => {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [newRoomName, setNewRoomName] = useState("");
+  const [newRoomLanguage, setNewRoomLanguage] = useState("javascript");
   const [joinRoomId, setJoinRoomId] = useState("");
   const [error, setError] = useState<string | null>(null);
 
@@ -72,7 +77,7 @@ const RoomManager: React.FC<RoomManagerProps> = ({
     const newRoomId = generateRoomId();
     const { data, error } = await supabase
       .from("rooms")
-      .insert({ id: newRoomId, name: newRoomName })
+      .insert({ id: newRoomId, name: newRoomName, language: newRoomLanguage })
       .select()
       .single();
 
@@ -82,6 +87,7 @@ const RoomManager: React.FC<RoomManagerProps> = ({
     } else if (data) {
       setNewRoomName("");
       setCurrentRoom(data.id);
+      setCurrentLanguage(data.language);
       setError(null);
     } else {
       console.error("Room created but no data returned");
@@ -90,8 +96,6 @@ const RoomManager: React.FC<RoomManagerProps> = ({
   }
 
   async function joinRoom(roomIdToJoin: string) {
-    console.log("Attempting to join room:", roomIdToJoin);
-
     if (!roomIdToJoin) {
       setError("Please enter a room ID.");
       return;
@@ -107,8 +111,8 @@ const RoomManager: React.FC<RoomManagerProps> = ({
       console.error("Error joining room:", error);
       setError("Failed to join room. Please try again.");
     } else if (data) {
-      console.log("Successfully joined room:", data);
       setCurrentRoom(data.id);
+      setCurrentLanguage(data.language);
       setJoinRoomId("");
       setError(null);
     } else {
@@ -134,6 +138,16 @@ const RoomManager: React.FC<RoomManagerProps> = ({
               placeholder="New Room Name"
               className="mr-2 p-2 border rounded"
             />
+            <select
+              value={newRoomLanguage}
+              onChange={(e) => setNewRoomLanguage(e.target.value)}
+              className="mr-2 p-2 border rounded"
+            >
+              <option value="javascript">JavaScript</option>
+              <option value="python">Python</option>
+              <option value="java">Java</option>
+              <option value="go">Go</option>
+            </select>
             <button
               onClick={createRoom}
               className="bg-blue-500 text-white p-2 rounded"
@@ -161,7 +175,7 @@ const RoomManager: React.FC<RoomManagerProps> = ({
             <ul>
               {rooms.map((room) => (
                 <li key={room.id} className="mb-1">
-                  {room.name} (ID: {room.id}) -
+                  {room.name} (ID: {room.id}, Language: {room.language}) -
                   <button
                     onClick={() => joinRoom(room.id)}
                     className="ml-2 text-blue-500"

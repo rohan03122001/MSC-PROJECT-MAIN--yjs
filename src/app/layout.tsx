@@ -1,6 +1,7 @@
 // /app/layout.tsx
 "use client";
 
+import "@/lib/monaco-languages";
 import "./globals.css";
 import { Inter } from "next/font/google";
 import Header from "@/components/Header";

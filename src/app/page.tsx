@@ -1,3 +1,4 @@
+// page.tsx
 "use client";
 
 import { useState } from "react";
@@ -16,6 +17,7 @@ const VoiceChat = dynamic(() => import("@/components/VoiceChat"), {
 
 export default function Home() {
   const [currentRoom, setCurrentRoom] = useState<string | null>(null);
+  const [currentLanguage, setCurrentLanguage] = useState<string>("javascript");
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -49,11 +51,15 @@ export default function Home() {
         <RoomManager
           currentRoom={currentRoom}
           setCurrentRoom={setCurrentRoom}
+          setCurrentLanguage={setCurrentLanguage}
         />
         {currentRoom && (
           <>
             <div className="bg-white rounded-lg shadow-xl overflow-hidden mt-6">
-              <CollaborativeEditor roomId={currentRoom} />
+              <CollaborativeEditor
+                roomId={currentRoom}
+                initialLanguage={currentLanguage}
+              />
             </div>
             <div className="mt-6">
               <VoiceChat roomId={currentRoom} />
