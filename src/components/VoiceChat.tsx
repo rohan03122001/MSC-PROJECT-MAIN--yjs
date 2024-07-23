@@ -2,7 +2,11 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import IonSfuClient from "@/lib/ionSfuClient";
 import { LocalStream, RemoteStream } from "ion-sdk-js";
 
-const VoiceChat: React.FC = () => {
+interface VoiceChatProps {
+  roomId: string;
+}
+
+const VoiceChat: React.FC<VoiceChatProps> = ({ roomId }) => {
   const [client, setClient] = useState<IonSfuClient | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [localStream, setLocalStream] = useState<LocalStream | null>(null);
@@ -29,7 +33,7 @@ const VoiceChat: React.FC = () => {
       localUidRef.current = uid;
 
       try {
-        await newClient.connect("test session", uid);
+        await newClient.connect(roomId, uid);
         setIsConnected(true);
       } catch (error) {
         console.error("Error connecting to room:", error);
@@ -60,7 +64,7 @@ const VoiceChat: React.FC = () => {
         client.close();
       }
     };
-  }, [isLocalStream]);
+  }, [roomId, isLocalStream]);
 
   useEffect(() => {
     Object.keys(audioRefs.current).forEach((streamId) => {

@@ -5,7 +5,11 @@ import { MonacoBinding } from "y-monaco";
 import React, { useEffect, useMemo, useState } from "react";
 import Editor from "@monaco-editor/react";
 
-function CollaborativeEditor() {
+interface CollaborativeEditorProps {
+  roomId: string;
+}
+
+function CollaborativeEditor({ roomId }: CollaborativeEditorProps) {
   const ydoc = useMemo(() => new Y.Doc(), []);
   const [editor, setEditor] = useState<any | null>(null);
   const [provider, setProvider] = useState<WebsocketProvider | null>(null);
@@ -13,8 +17,8 @@ function CollaborativeEditor() {
 
   useEffect(() => {
     const provider = new WebsocketProvider(
-      "wss://demos.yjs.dev/ws",
-      "monaco-next-demo",
+      "wss://demos.yjs.dev",
+      `monaco-demo-${roomId}`,
       ydoc
     );
     setProvider(provider);
@@ -22,7 +26,7 @@ function CollaborativeEditor() {
       provider?.destroy();
       ydoc.destroy();
     };
-  }, [ydoc]);
+  }, [ydoc, roomId]);
 
   useEffect(() => {
     if (provider == null || editor == null) {
