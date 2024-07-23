@@ -1,4 +1,4 @@
-// /lib/AuthContext.tsx
+
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { User } from "@supabase/supabase-js";
 import { supabase, getCurrentUser } from "./supabaseClient";
@@ -28,6 +28,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
     fetchUser();
 
+    // Set up listener for auth state changes
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         const currentUser = session?.user ?? null;

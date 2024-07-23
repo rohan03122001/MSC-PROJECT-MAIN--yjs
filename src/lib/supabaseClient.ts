@@ -1,4 +1,3 @@
-// supabaseClient.ts
 import { createClient, SupabaseClient, User } from "@supabase/supabase-js";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -32,16 +31,4 @@ export const getCurrentUser = async (): Promise<User | null> => {
     data: { user },
   } = await supabase.auth.getUser();
   return user;
-};
-
-// In /lib/supabaseClient.ts, add:
-
-export const signInWithPhone = async (phone: string) => {
-  const { data, error } = await supabase.auth.signInWithOtp({ phone });
-  return { data, error };
-};
-
-export const signInWithMagicLink = async (email: string) => {
-  const { data, error } = await supabase.auth.signInWithOtp({ email });
-  return { data, error };
 };

@@ -1,4 +1,3 @@
-// /components/Auth.tsx
 
 import React, { useState } from "react";
 import { signUp, signIn } from "@/lib/supabaseClient";
@@ -16,9 +15,9 @@ const Auth: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Implement rate limiting
     const now = Date.now();
     if (now - lastAttempt < 60000) {
-      // 1 minute cooldown
       setError("Please wait a moment before trying again.");
       return;
     }
@@ -57,6 +56,7 @@ const Auth: React.FC = () => {
         {isSignUp ? "Sign Up" : "Sign In"}
       </h2>
       <form onSubmit={handleSubmit}>
+        {/* Email input */}
         <div className="mb-4">
           <label htmlFor="email" className="block text-gray-700 font-bold mb-2">
             Email
@@ -70,6 +70,7 @@ const Auth: React.FC = () => {
             required
           />
         </div>
+        {/* Password input */}
         <div className="mb-6">
           <label
             htmlFor="password"

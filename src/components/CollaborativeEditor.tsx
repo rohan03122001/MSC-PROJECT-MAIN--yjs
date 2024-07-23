@@ -1,15 +1,19 @@
-// CollaborativeEditor.tsx
+
 import React, { useEffect, useMemo, useState } from "react";
 import * as Y from "yjs";
 import { WebsocketProvider } from "y-websocket";
 import { MonacoBinding } from "y-monaco";
-import Editor from "@monaco-editor/react";
+import dynamic from "next/dynamic";
+
+const Editor = dynamic(() => import("@monaco-editor/react"), { ssr: false });
+import CodeExecutionEnvironment from "./CodeExecutionEnvironment";
 
 interface CollaborativeEditorProps {
   roomId: string;
   initialLanguage: string;
 }
 
+// Function to get starter code for different languages
 const getStarterCode = (lang: string) => {
   switch (lang) {
     case "javascript":
@@ -24,6 +28,7 @@ const getStarterCode = (lang: string) => {
       return "// Start coding here...";
   }
 };
+
 function CollaborativeEditor({
   roomId,
   initialLanguage,
@@ -33,7 +38,9 @@ function CollaborativeEditor({
   const [editor, setEditor] = useState<any | null>(null);
   const [provider, setProvider] = useState<WebsocketProvider | null>(null);
   const [binding, setBinding] = useState<MonacoBinding | null>(null);
+  const [code, setCode] = useState(getStarterCode(language));
 
+  // Set up WebSocket provider and Monaco binding
   useEffect(() => {
     const provider = new WebsocketProvider(
       "wss://demos.yjs.dev",
@@ -62,6 +69,13 @@ function CollaborativeEditor({
       binding.destroy();
     };
   }, [ydoc, provider, editor]);
+
+  const handleEditorChange = (value: string | undefined) => {
+    if (value !== undefined) {
+      setCode(value);
+    }
+  };
+
   return (
     <div className="border-t border-gray-200">
       <select
@@ -90,7 +104,9 @@ function CollaborativeEditor({
         onMount={(editor) => {
           setEditor(editor);
         }}
+        onChange={handleEditorChange}
       />
+      <CodeExecutionEnvironment code={code} language={language} />
     </div>
   );
 }

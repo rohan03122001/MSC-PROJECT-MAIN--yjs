@@ -1,4 +1,4 @@
-// page.tsx
+
 "use client";
 
 import { useState } from "react";
@@ -7,6 +7,7 @@ import RoomManager from "@/components/RoomManager";
 import { useAuth } from "@/lib/AuthContext";
 import Link from "next/link";
 
+// Dynamically import components to avoid SSR issues
 const CollaborativeEditor = dynamic(
   () => import("@/components/CollaborativeEditor"),
   { ssr: false }

@@ -1,4 +1,4 @@
-// RoomManager.tsx
+
 import React, { useState, useEffect } from "react";
 import { supabase } from "../lib/supabaseClient";
 
@@ -28,6 +28,7 @@ const RoomManager: React.FC<RoomManagerProps> = ({
 
   useEffect(() => {
     fetchRooms();
+    // Set up real-time subscription for room changes
     const subscription = supabase
       .channel("public:rooms")
       .on(

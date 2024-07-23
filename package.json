@@ -9,11 +9,12 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "monaco-editor": "^0.34.1",
     "@monaco-editor/react": "^4.6.0",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/supabase-js": "^2.44.4",
+    "axios": "^1.7.2",
     "ion-sdk-js": "^1.8.2",
+    "monaco-editor": "^0.34.1",
     "next": "14.2.5",
     "react": "^18",
     "react-dom": "^18",
