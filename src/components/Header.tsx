@@ -1,6 +1,18 @@
-import React from "react";
+// /components/Header.tsx
+"use client";
 
-const Header = () => {
+import React from "react";
+import { useAuth } from "@/lib/AuthContext";
+import { signOut } from "@/lib/supabaseClient";
+import Link from "next/link";
+
+const Header: React.FC = () => {
+  const { user, loading } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
   return (
     <header className="bg-white shadow">
       <div className="container mx-auto px-4 py-6 flex justify-between items-center">
@@ -8,9 +20,9 @@ const Header = () => {
         <nav>
           <ul className="flex space-x-4">
             <li>
-              <a href="#" className="text-gray-600 hover:text-gray-800">
+              <Link href="/" className="text-gray-600 hover:text-gray-800">
                 Home
-              </a>
+              </Link>
             </li>
             <li>
               <a href="#" className="text-gray-600 hover:text-gray-800">
@@ -22,6 +34,25 @@ const Header = () => {
                 Contact
               </a>
             </li>
+            {!loading && (
+              <li>
+                {user ? (
+                  <button
+                    onClick={handleSignOut}
+                    className="text-gray-600 hover:text-gray-800"
+                  >
+                    Sign Out
+                  </button>
+                ) : (
+                  <Link
+                    href="/auth"
+                    className="text-gray-600 hover:text-gray-800"
+                  >
+                    Sign In
+                  </Link>
+                )}
+              </li>
+            )}
           </ul>
         </nav>
       </div>
