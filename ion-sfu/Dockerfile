@@ -1,0 +1,21 @@
+[router]
+maxbandwidth = 1500
+maxbuffertime = 1000
+
+[webrtc]
+iceservers = [
+  { urls = ["stun:stun.l.google.com:19302"] }
+]
+
+[webrtc.candidates]
+icelite = true
+nat1to1ips = []
+
+[turn]
+enabled = false
+domain = ""
+cert = ""
+key = ""
+
+[log]
+level = "info"
