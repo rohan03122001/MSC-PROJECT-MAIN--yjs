@@ -1,3 +1,4 @@
+// components/CollaborativeEditor.tsx
 
 import React, { useEffect, useMemo, useState } from "react";
 import * as Y from "yjs";
@@ -7,6 +8,8 @@ import dynamic from "next/dynamic";
 
 const Editor = dynamic(() => import("@monaco-editor/react"), { ssr: false });
 import CodeExecutionEnvironment from "./CodeExecutionEnvironment";
+import VersionControl from "./VersionControl";
+import { supabase } from "@/lib/supabaseClient";
 
 interface CollaborativeEditorProps {
   roomId: string;
@@ -28,7 +31,6 @@ const getStarterCode = (lang: string) => {
       return "// Start coding here...";
   }
 };
-
 function CollaborativeEditor({
   roomId,
   initialLanguage,
@@ -38,7 +40,31 @@ function CollaborativeEditor({
   const [editor, setEditor] = useState<any | null>(null);
   const [provider, setProvider] = useState<WebsocketProvider | null>(null);
   const [binding, setBinding] = useState<MonacoBinding | null>(null);
-  const [code, setCode] = useState(getStarterCode(language));
+  const [code, setCode] = useState("");
+
+  // Fetch the latest code version when component mounts
+  useEffect(() => {
+    const fetchLatestCode = async () => {
+      const { data, error } = await supabase
+        .from("code_versions")
+        .select("snapshot")
+        .eq("room_id", roomId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error) {
+        console.error("Error fetching latest code:", error);
+        setCode(getStarterCode(language));
+      } else if (data) {
+        setCode(data.snapshot);
+      } else {
+        setCode(getStarterCode(language));
+      }
+    };
+
+    fetchLatestCode();
+  }, [roomId, language]);
 
   // Set up WebSocket provider and Monaco binding
   useEffect(() => {
@@ -58,21 +84,34 @@ function CollaborativeEditor({
     if (provider == null || editor == null) {
       return;
     }
+    const ytext = ydoc.getText("monaco");
     const binding = new MonacoBinding(
-      ydoc.getText("monaco"),
+      ytext,
       editor.getModel()!,
       new Set([editor]),
       provider.awareness
     );
     setBinding(binding);
+
+    // Set the initial content of the editor
+    if (ytext.toString() === "") {
+      ytext.insert(0, code);
+    }
+
     return () => {
       binding.destroy();
     };
-  }, [ydoc, provider, editor]);
+  }, [ydoc, provider, editor, code]);
 
   const handleEditorChange = (value: string | undefined) => {
     if (value !== undefined) {
       setCode(value);
+    }
+  };
+
+  const handleRevert = (newCode: string) => {
+    if (editor) {
+      editor.setValue(newCode);
     }
   };
 
@@ -90,7 +129,7 @@ function CollaborativeEditor({
       </select>
       <Editor
         height="50vh"
-        defaultValue={getStarterCode(language)}
+        value={code}
         language={language}
         theme="vs-dark"
         options={{
@@ -105,6 +144,11 @@ function CollaborativeEditor({
           setEditor(editor);
         }}
         onChange={handleEditorChange}
+      />
+      <VersionControl
+        roomId={roomId}
+        currentCode={code}
+        onRevert={handleRevert}
       />
       <CodeExecutionEnvironment code={code} language={language} />
     </div>

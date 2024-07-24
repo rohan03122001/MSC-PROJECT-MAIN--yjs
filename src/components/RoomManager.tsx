@@ -77,27 +77,31 @@ const RoomManager: React.FC<RoomManagerProps> = ({
     }
 
     const newRoomId = generateRoomId();
-    const { data, error } = await supabase
-      .from("rooms")
-      .insert({ id: newRoomId, name: newRoomName, language: newRoomLanguage })
-      .select()
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from("rooms")
+        .insert({ id: newRoomId, name: newRoomName, language: newRoomLanguage })
+        .select()
+        .single();
 
-    if (error) {
-      console.error("Error creating room:", error);
-      setError("Failed to create room. Please try again.");
-    } else if (data) {
-      setNewRoomName("");
-      setCurrentRoom(data.id);
-      setCurrentLanguage(data.language);
-      setError(null);
-      router.push(`/room/${data.id}`);
-    } else {
-      console.error("Room created but no data returned");
-      setError("An unexpected error occurred. Please try again.");
+      if (error) {
+        console.error("Error creating room:", error);
+        setError(`Failed to create room: ${error.message}`);
+      } else if (data) {
+        setNewRoomName("");
+        setCurrentRoom(data.id);
+        setCurrentLanguage(data.language);
+        setError(null);
+        router.push(`/room/${data.id}`);
+      } else {
+        console.error("Room created but no data returned");
+        setError("An unexpected error occurred. Please try again.");
+      }
+    } catch (err) {
+      console.error("Unexpected error:", err);
+      setError(`An unexpected error occurred: ${err.message}`);
     }
   }
-
   async function joinRoom(roomIdToJoin: string) {
     if (!roomIdToJoin) {
       setError("Please enter a room ID.");
