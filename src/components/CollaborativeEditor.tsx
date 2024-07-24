@@ -84,24 +84,21 @@ function CollaborativeEditor({
     if (provider == null || editor == null) {
       return;
     }
-    const ytext = ydoc.getText("monaco");
     const binding = new MonacoBinding(
-      ytext,
+      ydoc.getText("monaco"),
       editor.getModel()!,
       new Set([editor]),
       provider.awareness
     );
     setBinding(binding);
 
-    // Set the initial content of the editor
-    if (ytext.toString() === "") {
-      ytext.insert(0, code);
-    }
-
+    // Add a cleanup function to remove stale cursors
     return () => {
       binding.destroy();
+      provider.awareness.setLocalStateField("user", null);
+      provider.awareness.setLocalStateField("cursor", null);
     };
-  }, [ydoc, provider, editor, code]);
+  }, [ydoc, provider, editor]);
 
   const handleEditorChange = (value: string | undefined) => {
     if (value !== undefined) {
