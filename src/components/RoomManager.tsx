@@ -1,6 +1,6 @@
-
 import React, { useState, useEffect } from "react";
 import { supabase } from "../lib/supabaseClient";
+import { useRouter } from "next/navigation";
 
 interface Room {
   id: string;
@@ -25,6 +25,7 @@ const RoomManager: React.FC<RoomManagerProps> = ({
   const [newRoomLanguage, setNewRoomLanguage] = useState("javascript");
   const [joinRoomId, setJoinRoomId] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     fetchRooms();
@@ -90,6 +91,7 @@ const RoomManager: React.FC<RoomManagerProps> = ({
       setCurrentRoom(data.id);
       setCurrentLanguage(data.language);
       setError(null);
+      router.push(`/room/${data.id}`);
     } else {
       console.error("Room created but no data returned");
       setError("An unexpected error occurred. Please try again.");
@@ -116,6 +118,7 @@ const RoomManager: React.FC<RoomManagerProps> = ({
       setCurrentLanguage(data.language);
       setJoinRoomId("");
       setError(null);
+      router.push(`/room/${data.id}`);
     } else {
       console.error("Room not found");
       setError("Room not found. Please check the room ID and try again.");
@@ -124,6 +127,7 @@ const RoomManager: React.FC<RoomManagerProps> = ({
 
   function leaveRoom() {
     setCurrentRoom(null);
+    router.push("/");
   }
 
   return (

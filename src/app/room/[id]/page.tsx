@@ -1,15 +1,32 @@
-// app/page.tsx
+// app/room/[id]/page.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
+import { useParams } from "next/navigation";
 import RoomManager from "@/components/RoomManager";
 import { useAuth } from "@/lib/AuthContext";
 import Link from "next/link";
 
-export default function Home() {
-  const [currentRoom, setCurrentRoom] = useState<string | null>(null);
+const CollaborativeEditor = dynamic(
+  () => import("@/components/CollaborativeEditor"),
+  { ssr: false }
+);
+const VoiceChat = dynamic(() => import("@/components/VoiceChat"), {
+  ssr: false,
+});
+
+export default function RoomPage() {
+  const { id } = useParams();
+  const [currentRoom, setCurrentRoom] = useState<string | null>(id as string);
   const [currentLanguage, setCurrentLanguage] = useState<string>("javascript");
   const { user, loading } = useAuth();
+
+  useEffect(() => {
+    if (id) {
+      setCurrentRoom(id as string);
+    }
+  }, [id]);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -44,6 +61,19 @@ export default function Home() {
           setCurrentRoom={setCurrentRoom}
           setCurrentLanguage={setCurrentLanguage}
         />
+        {currentRoom && (
+          <>
+            <div className="bg-white rounded-lg shadow-xl overflow-hidden mt-6">
+              <CollaborativeEditor
+                roomId={currentRoom}
+                initialLanguage={currentLanguage}
+              />
+            </div>
+            <div className="mt-6">
+              <VoiceChat roomId={currentRoom} />
+            </div>
+          </>
+        )}
       </main>
     </div>
   );
