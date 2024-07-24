@@ -1,4 +1,4 @@
-
+// components/CodeExecutionEnvironment.tsx
 import React, { useState } from "react";
 import axios from "axios";
 
@@ -16,7 +16,6 @@ interface ExecutionResult {
   memory: string;
 }
 
-// Map of supported languages to their Judge0 language IDs
 const languageIds: { [key: string]: number } = {
   javascript: 63,
   python: 71,
@@ -36,7 +35,6 @@ const CodeExecutionEnvironment: React.FC<CodeExecutionEnvironmentProps> = ({
     setLoading(true);
     setError(null);
     try {
-      // Submit code execution request
       const response = await axios.post(
         "https://judge0-ce.p.rapidapi.com/submissions",
         {
@@ -54,8 +52,6 @@ const CodeExecutionEnvironment: React.FC<CodeExecutionEnvironmentProps> = ({
       );
 
       const token = response.data.token;
-
-      // Poll for execution results
       let executionResult;
       do {
         const statusResponse = await axios.get(

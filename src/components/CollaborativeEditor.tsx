@@ -1,46 +1,38 @@
-
+// components/CollaborativeEditor.tsx
 import React, { useEffect, useMemo, useState } from "react";
 import * as Y from "yjs";
 import { WebsocketProvider } from "y-websocket";
 import { MonacoBinding } from "y-monaco";
 import dynamic from "next/dynamic";
+import { createFile, updateFile, deleteFile } from "@/lib/supabaseClient";
 
 const Editor = dynamic(() => import("@monaco-editor/react"), { ssr: false });
 import CodeExecutionEnvironment from "./CodeExecutionEnvironment";
+import FileManager from "./FileManager";
 
 interface CollaborativeEditorProps {
   roomId: string;
-  initialLanguage: string;
+  initialFiles: File[];
 }
 
-// Function to get starter code for different languages
-const getStarterCode = (lang: string) => {
-  switch (lang) {
-    case "javascript":
-      return "// JavaScript starter code\nconsole.log('Hello, World!');";
-    case "python":
-      return "# Python starter code\nprint('Hello, World!')";
-    case "java":
-      return '// Java starter code\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello, World!");\n    }\n}';
-    case "go":
-      return '// Go starter code\npackage main\n\nimport "fmt"\n\nfunc main() {\n    fmt.Println("Hello, World!")\n}';
-    default:
-      return "// Start coding here...";
-  }
-};
+interface File {
+  id: string;
+  name: string;
+  content: string;
+  language: string;
+}
 
-function CollaborativeEditor({
+const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
   roomId,
-  initialLanguage,
-}: CollaborativeEditorProps) {
-  const [language, setLanguage] = useState(initialLanguage || "javascript");
+  initialFiles,
+}) => {
+  const [files, setFiles] = useState<File[]>(initialFiles);
+  const [activeFileId, setActiveFileId] = useState(initialFiles[0]?.id || "");
   const ydoc = useMemo(() => new Y.Doc(), []);
   const [editor, setEditor] = useState<any | null>(null);
   const [provider, setProvider] = useState<WebsocketProvider | null>(null);
   const [binding, setBinding] = useState<MonacoBinding | null>(null);
-  const [code, setCode] = useState(getStarterCode(language));
 
-  // Set up WebSocket provider and Monaco binding
   useEffect(() => {
     const provider = new WebsocketProvider(
       "wss://demos.yjs.dev",
@@ -55,11 +47,12 @@ function CollaborativeEditor({
   }, [ydoc, roomId]);
 
   useEffect(() => {
-    if (provider == null || editor == null) {
+    if (provider == null || editor == null || !activeFileId) {
       return;
     }
+    const ytext = ydoc.getText(`file_${activeFileId}`);
     const binding = new MonacoBinding(
-      ydoc.getText("monaco"),
+      ytext,
       editor.getModel()!,
       new Set([editor]),
       provider.awareness
@@ -68,47 +61,88 @@ function CollaborativeEditor({
     return () => {
       binding.destroy();
     };
-  }, [ydoc, provider, editor]);
+  }, [ydoc, provider, editor, activeFileId]);
 
-  const handleEditorChange = (value: string | undefined) => {
-    if (value !== undefined) {
-      setCode(value);
+  const handleEditorChange = async (value: string | undefined) => {
+    if (value !== undefined && activeFileId) {
+      try {
+        await updateFile(activeFileId, value);
+        setFiles((prevFiles) =>
+          prevFiles.map((file) =>
+            file.id === activeFileId ? { ...file, content: value } : file
+          )
+        );
+      } catch (error) {
+        console.error("Error updating file:", error);
+      }
     }
   };
 
+  const handleFileSelect = (fileId: string) => {
+    setActiveFileId(fileId);
+  };
+
+  const handleFileCreate = async (fileName: string, language: string) => {
+    try {
+      const newFile = await createFile(roomId, fileName, "", language);
+      setFiles((prevFiles) => [...prevFiles, newFile]);
+      setActiveFileId(newFile.id);
+    } catch (error) {
+      console.error("Error creating file:", error);
+    }
+  };
+
+  const handleFileDelete = async (fileId: string) => {
+    try {
+      await deleteFile(fileId);
+      setFiles((prevFiles) => prevFiles.filter((file) => file.id !== fileId));
+      if (activeFileId === fileId) {
+        setActiveFileId(files[0]?.id || "");
+      }
+    } catch (error) {
+      console.error("Error deleting file:", error);
+    }
+  };
+
+  const activeFile = files.find((file) => file.id === activeFileId);
+
   return (
-    <div className="border-t border-gray-200">
-      <select
-        value={language}
-        onChange={(e) => setLanguage(e.target.value)}
-        className="mb-2 p-2 border rounded"
-      >
-        <option value="javascript">JavaScript</option>
-        <option value="python">Python</option>
-        <option value="java">Java</option>
-        <option value="go">Go</option>
-      </select>
-      <Editor
-        height="50vh"
-        defaultValue={getStarterCode(language)}
-        language={language}
-        theme="vs-dark"
-        options={{
-          minimap: { enabled: false },
-          fontSize: 16,
-          lineNumbers: "on",
-          roundedSelection: false,
-          scrollBeyondLastLine: false,
-          readOnly: false,
-        }}
-        onMount={(editor) => {
-          setEditor(editor);
-        }}
-        onChange={handleEditorChange}
+    <div className="collaborative-editor">
+      <FileManager
+        files={files}
+        activeFile={activeFileId}
+        onFileSelect={handleFileSelect}
+        onFileCreate={handleFileCreate}
+        onFileDelete={handleFileDelete}
       />
-      <CodeExecutionEnvironment code={code} language={language} />
+      {activeFile && (
+        <>
+          <Editor
+            height="50vh"
+            value={activeFile.content}
+            language={activeFile.language}
+            theme="vs-dark"
+            options={{
+              minimap: { enabled: false },
+              fontSize: 16,
+              lineNumbers: "on",
+              roundedSelection: false,
+              scrollBeyondLastLine: false,
+              readOnly: false,
+            }}
+            onMount={(editor) => {
+              setEditor(editor);
+            }}
+            onChange={handleEditorChange}
+          />
+          <CodeExecutionEnvironment
+            code={activeFile.content}
+            language={activeFile.language}
+          />
+        </>
+      )}
     </div>
   );
-}
+};
 
 export default CollaborativeEditor;

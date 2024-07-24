@@ -1,34 +1,39 @@
-
+// components/RoomManager.tsx
 import React, { useState, useEffect } from "react";
-import { supabase } from "../lib/supabaseClient";
+import { supabase, createRoom, getRoomWithFiles } from "../lib/supabaseClient";
+
+interface File {
+  id: string;
+  name: string;
+  content: string;
+  language: string;
+}
 
 interface Room {
   id: string;
   name: string;
-  language: string;
+  files: File[];
   created_at: string;
 }
 
 interface RoomManagerProps {
   currentRoom: string | null;
   setCurrentRoom: (roomId: string | null) => void;
-  setCurrentLanguage: (language: string) => void;
+  setCurrentFiles: (files: File[]) => void;
 }
 
 const RoomManager: React.FC<RoomManagerProps> = ({
   currentRoom,
   setCurrentRoom,
-  setCurrentLanguage,
+  setCurrentFiles,
 }) => {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [newRoomName, setNewRoomName] = useState("");
-  const [newRoomLanguage, setNewRoomLanguage] = useState("javascript");
   const [joinRoomId, setJoinRoomId] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchRooms();
-    // Set up real-time subscription for room changes
     const subscription = supabase
       .channel("public:rooms")
       .on(
@@ -58,41 +63,24 @@ const RoomManager: React.FC<RoomManagerProps> = ({
     }
   }
 
-  function generateRoomId(): string {
-    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let result = "";
-    for (let i = 0; i < 6; i++) {
-      result += characters.charAt(
-        Math.floor(Math.random() * characters.length)
-      );
-    }
-    return result;
-  }
-
-  async function createRoom() {
+  async function createNewRoom() {
     if (!newRoomName.trim()) {
       setError("Please enter a room name.");
       return;
     }
 
-    const newRoomId = generateRoomId();
-    const { data, error } = await supabase
-      .from("rooms")
-      .insert({ id: newRoomId, name: newRoomName, language: newRoomLanguage })
-      .select()
-      .single();
-
-    if (error) {
+    try {
+      const initialFile = {
+        name: "index.js",
+        content: "// Start coding here...",
+        language: "javascript",
+      };
+      const room = await createRoom(newRoomName, initialFile);
+      setNewRoomName("");
+      await joinRoom(room.id);
+    } catch (error) {
       console.error("Error creating room:", error);
       setError("Failed to create room. Please try again.");
-    } else if (data) {
-      setNewRoomName("");
-      setCurrentRoom(data.id);
-      setCurrentLanguage(data.language);
-      setError(null);
-    } else {
-      console.error("Room created but no data returned");
-      setError("An unexpected error occurred. Please try again.");
     }
   }
 
@@ -102,28 +90,21 @@ const RoomManager: React.FC<RoomManagerProps> = ({
       return;
     }
 
-    const { data, error } = await supabase
-      .from("rooms")
-      .select()
-      .eq("id", roomIdToJoin.toUpperCase())
-      .single();
-
-    if (error) {
-      console.error("Error joining room:", error);
-      setError("Failed to join room. Please try again.");
-    } else if (data) {
-      setCurrentRoom(data.id);
-      setCurrentLanguage(data.language);
+    try {
+      const room = await getRoomWithFiles(roomIdToJoin);
+      setCurrentRoom(room.id);
+      setCurrentFiles(room.files);
       setJoinRoomId("");
       setError(null);
-    } else {
-      console.error("Room not found");
-      setError("Room not found. Please check the room ID and try again.");
+    } catch (error) {
+      console.error("Error joining room:", error);
+      setError("Failed to join room. Please try again.");
     }
   }
 
   function leaveRoom() {
     setCurrentRoom(null);
+    setCurrentFiles([]);
   }
 
   return (
@@ -139,18 +120,8 @@ const RoomManager: React.FC<RoomManagerProps> = ({
               placeholder="New Room Name"
               className="mr-2 p-2 border rounded"
             />
-            <select
-              value={newRoomLanguage}
-              onChange={(e) => setNewRoomLanguage(e.target.value)}
-              className="mr-2 p-2 border rounded"
-            >
-              <option value="javascript">JavaScript</option>
-              <option value="python">Python</option>
-              <option value="java">Java</option>
-              <option value="go">Go</option>
-            </select>
             <button
-              onClick={createRoom}
+              onClick={createNewRoom}
               className="bg-blue-500 text-white p-2 rounded"
             >
               Create Room
@@ -161,7 +132,7 @@ const RoomManager: React.FC<RoomManagerProps> = ({
               type="text"
               value={joinRoomId}
               onChange={(e) => setJoinRoomId(e.target.value)}
-              placeholder="6-character Room ID to Join"
+              placeholder="Room ID to Join"
               className="mr-2 p-2 border rounded"
             />
             <button
@@ -176,7 +147,7 @@ const RoomManager: React.FC<RoomManagerProps> = ({
             <ul>
               {rooms.map((room) => (
                 <li key={room.id} className="mb-1">
-                  {room.name} (ID: {room.id}, Language: {room.language}) -
+                  {room.name} (ID: {room.id}) -
                   <button
                     onClick={() => joinRoom(room.id)}
                     className="ml-2 text-blue-500"

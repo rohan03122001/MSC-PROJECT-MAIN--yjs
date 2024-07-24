@@ -1,4 +1,4 @@
-
+// page.tsx
 "use client";
 
 import { useState } from "react";
@@ -7,7 +7,6 @@ import RoomManager from "@/components/RoomManager";
 import { useAuth } from "@/lib/AuthContext";
 import Link from "next/link";
 
-// Dynamically import components to avoid SSR issues
 const CollaborativeEditor = dynamic(
   () => import("@/components/CollaborativeEditor"),
   { ssr: false }
@@ -16,9 +15,16 @@ const VoiceChat = dynamic(() => import("@/components/VoiceChat"), {
   ssr: false,
 });
 
+interface File {
+  id: string;
+  name: string;
+  content: string;
+  language: string;
+}
+
 export default function Home() {
   const [currentRoom, setCurrentRoom] = useState<string | null>(null);
-  const [currentLanguage, setCurrentLanguage] = useState<string>("javascript");
+  const [currentFiles, setCurrentFiles] = useState<File[]>([]);
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -52,14 +58,14 @@ export default function Home() {
         <RoomManager
           currentRoom={currentRoom}
           setCurrentRoom={setCurrentRoom}
-          setCurrentLanguage={setCurrentLanguage}
+          setCurrentFiles={setCurrentFiles}
         />
         {currentRoom && (
           <>
             <div className="bg-white rounded-lg shadow-xl overflow-hidden mt-6">
               <CollaborativeEditor
                 roomId={currentRoom}
-                initialLanguage={currentLanguage}
+                initialFiles={currentFiles}
               />
             </div>
             <div className="mt-6">
