@@ -80,25 +80,23 @@ const VersionControl: React.FC<VersionControlProps> = ({
   };
 
   return (
-    <div className="version-control mt-4">
-      <h3 className="text-lg font-semibold mb-2">Version Control</h3>
+    <div className="version-control space-y-4">
+      <h3 className="text-lg font-semibold">Version Control</h3>
       <button
         onClick={saveVersion}
-        className="bg-blue-500 text-white px-4 py-2 rounded mr-2"
+        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors w-full"
       >
         Save Current Version
       </button>
-      <div className="versions mt-2">
+      <div className="versions space-y-2">
         <h4 className="font-medium">Previous Versions:</h4>
-        <ul>
+        <ul className="space-y-2">
           {versions.map((version) => (
-            <li key={version.id} className="flex items-center mt-1">
-              <span className="mr-2">
-                {new Date(version.created_at).toLocaleString()}
-              </span>
+            <li key={version.id} className="flex justify-between items-center">
+              <span>{new Date(version.created_at).toLocaleString()}</span>
               <button
                 onClick={() => revertToVersion(version.snapshot)}
-                className="bg-gray-200 px-2 py-1 rounded text-sm"
+                className="bg-gray-200 px-3 py-1 rounded text-sm hover:bg-gray-300 transition-colors"
               >
                 Revert
               </button>

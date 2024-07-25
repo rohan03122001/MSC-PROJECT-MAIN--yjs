@@ -1,4 +1,3 @@
-// app/room/[id]/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -29,7 +28,11 @@ export default function RoomPage() {
   }, [id]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        Loading...
+      </div>
+    );
   }
 
   if (!user) {
@@ -51,30 +54,36 @@ export default function RoomPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-500 to-purple-600">
-      <main className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-500 to-purple-600 p-6">
+      <div className="container mx-auto">
         <h1 className="text-4xl font-bold text-white mb-6 text-center">
           Collaborative Code Editor with Voice Chat
         </h1>
-        <RoomManager
-          currentRoom={currentRoom}
-          setCurrentRoom={setCurrentRoom}
-          setCurrentLanguage={setCurrentLanguage}
-        />
-        {currentRoom && (
-          <>
-            <div className="bg-white rounded-lg shadow-xl overflow-hidden mt-6">
-              <CollaborativeEditor
-                roomId={currentRoom}
-                initialLanguage={currentLanguage}
-              />
-            </div>
-            <div className="mt-6">
-              <VoiceChat roomId={currentRoom} />
-            </div>
-          </>
-        )}
-      </main>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            {currentRoom && (
+              <div className="bg-white rounded-lg shadow-xl overflow-hidden">
+                <CollaborativeEditor
+                  roomId={currentRoom}
+                  initialLanguage={currentLanguage}
+                />
+              </div>
+            )}
+          </div>
+          <div className="space-y-6">
+            <RoomManager
+              currentRoom={currentRoom}
+              setCurrentRoom={setCurrentRoom}
+              setCurrentLanguage={setCurrentLanguage}
+            />
+            {currentRoom && (
+              <>
+                <VoiceChat roomId={currentRoom} />
+              </>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

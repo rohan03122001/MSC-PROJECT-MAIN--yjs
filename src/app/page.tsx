@@ -1,4 +1,3 @@
-// app/page.tsx
 "use client";
 
 import { useState } from "react";
@@ -12,7 +11,11 @@ export default function Home() {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        Loading...
+      </div>
+    );
   }
 
   if (!user) {
@@ -34,8 +37,8 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-500 to-purple-600">
-      <main className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-500 to-purple-600 p-6">
+      <div className="container mx-auto">
         <h1 className="text-4xl font-bold text-white mb-6 text-center">
           Collaborative Code Editor with Voice Chat
         </h1>
@@ -44,7 +47,10 @@ export default function Home() {
           setCurrentRoom={setCurrentRoom}
           setCurrentLanguage={setCurrentLanguage}
         />
-      </main>
+      </div>
+      <button className="fixed bottom-6 right-6 bg-blue-500 text-white rounded-full p-4 shadow-lg hover:bg-blue-600 transition-colors">
+        + New Room
+      </button>
     </div>
   );
 }

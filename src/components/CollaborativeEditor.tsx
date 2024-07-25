@@ -113,17 +113,19 @@ function CollaborativeEditor({
   };
 
   return (
-    <div className="border-t border-gray-200">
-      <select
-        value={language}
-        onChange={(e) => setLanguage(e.target.value)}
-        className="mb-2 p-2 border rounded"
-      >
-        <option value="javascript">JavaScript</option>
-        <option value="python">Python</option>
-        <option value="java">Java</option>
-        <option value="go">Go</option>
-      </select>
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <select
+          value={language}
+          onChange={(e) => setLanguage(e.target.value)}
+          className="p-2 border rounded"
+        >
+          <option value="javascript">JavaScript</option>
+          <option value="python">Python</option>
+          <option value="java">Java</option>
+          <option value="go">Go</option>
+        </select>
+      </div>
       <Editor
         height="50vh"
         value={code}

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect } from "react";
@@ -15,17 +14,16 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Load Monaco languages on client-side
   useEffect(() => {
     loadMonacoLanguages();
   }, []);
 
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={`${inter.className} min-h-screen flex flex-col`}>
         <AuthProvider>
           <Header />
-          {children}
+          <main className="flex-grow">{children}</main>
         </AuthProvider>
       </body>
     </html>

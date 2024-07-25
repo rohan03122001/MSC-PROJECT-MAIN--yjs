@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import axios from "axios";
 
@@ -80,26 +79,26 @@ const CodeExecutionEnvironment: React.FC<CodeExecutionEnvironmentProps> = ({
   };
 
   return (
-    <div className="mt-4 p-4 bg-white rounded-lg shadow-md">
-      <h3 className="text-xl font-semibold mb-2">Code Execution</h3>
+    <div className="mt-6 p-6 bg-white rounded-lg shadow-md space-y-4">
+      <h3 className="text-xl font-semibold">Code Execution</h3>
       <button
         onClick={executeCode}
-        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors"
+        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors w-full"
         disabled={loading}
       >
         {loading ? "Executing..." : "Execute Code"}
       </button>
-      {error && <p className="text-red-500 mt-2">{error}</p>}
+      {error && <p className="text-red-500">{error}</p>}
       {result && (
-        <div className="mt-4">
+        <div className="space-y-2">
           <h4 className="font-semibold">Output:</h4>
-          <pre className="bg-gray-100 p-2 rounded mt-2 whitespace-pre-wrap">
+          <pre className="bg-gray-100 p-4 rounded whitespace-pre-wrap">
             {result.stdout ||
               result.stderr ||
               result.compile_output ||
               result.message}
           </pre>
-          <p className="mt-2">
+          <p>
             Execution time: {result.time} | Memory used: {result.memory}
           </p>
         </div>

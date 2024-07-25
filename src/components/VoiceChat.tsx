@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import IonSfuClient from "@/lib/ionSfuClient";
 import { LocalStream, RemoteStream } from "ion-sdk-js";
@@ -126,36 +125,39 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ roomId }) => {
   };
 
   return (
-    <div className="p-4 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-4">Voice Chat</h2>
+    <div className="p-6 bg-white rounded-lg shadow-md space-y-4">
+      <h2 className="text-2xl font-bold">Voice Chat</h2>
       {isConnected ? (
-        <div>
-          <p className="mb-2">Connected to room</p>
+        <div className="space-y-4">
+          <p className="font-semibold">Connected to room</p>
           {localStream ? (
             <button
               onClick={stopAudio}
-              className="bg-red-500 text-white px-4 py-2 rounded"
+              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors w-full"
             >
               Stop Audio
             </button>
           ) : (
             <button
               onClick={startAudio}
-              className="bg-green-500 text-white px-4 py-2 rounded"
+              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors w-full"
             >
               Start Audio
             </button>
           )}
-          <div className="mt-4">
+          <div className="space-y-2">
             <h3 className="text-xl font-semibold">Remote Streams:</h3>
             {remoteStreams
               .filter((stream) => !isLocalStream(stream.id))
               .map((stream) => (
-                <div key={stream.id} className="mt-2">
-                  Remote Stream: {stream.id.slice(0, 6)}...
+                <div
+                  key={stream.id}
+                  className="flex justify-between items-center"
+                >
+                  <span>Remote Stream: {stream.id.slice(0, 6)}...</span>
                   <button
                     onClick={() => toggleMute(stream)}
-                    className="ml-2 bg-yellow-500 text-white px-2 py-1 rounded"
+                    className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition-colors"
                   >
                     Toggle Mute
                   </button>

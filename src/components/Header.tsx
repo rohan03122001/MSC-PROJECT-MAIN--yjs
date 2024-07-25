@@ -1,4 +1,3 @@
-// /components/Header.tsx
 "use client";
 
 import React from "react";
@@ -14,11 +13,11 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="bg-white shadow">
-      <div className="container mx-auto px-4 py-6 flex justify-between items-center">
+    <header className="sticky top-0 z-10 bg-white shadow">
+      <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         <h2 className="text-2xl font-semibold text-gray-800">CollabCode</h2>
         <nav>
-          <ul className="flex space-x-4">
+          <ul className="flex space-x-6">
             <li>
               <Link href="/" className="text-gray-600 hover:text-gray-800">
                 Home

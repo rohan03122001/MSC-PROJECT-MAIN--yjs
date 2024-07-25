@@ -29,7 +29,6 @@ const RoomManager: React.FC<RoomManagerProps> = ({
 
   useEffect(() => {
     fetchRooms();
-    // Set up real-time subscription for room changes
     const subscription = supabase
       .channel("public:rooms")
       .on(
@@ -102,6 +101,7 @@ const RoomManager: React.FC<RoomManagerProps> = ({
       setError(`An unexpected error occurred: ${err.message}`);
     }
   }
+
   async function joinRoom(roomIdToJoin: string) {
     if (!roomIdToJoin) {
       setError("Please enter a room ID.");
@@ -135,59 +135,67 @@ const RoomManager: React.FC<RoomManagerProps> = ({
   }
 
   return (
-    <div className="room-manager p-4 bg-white rounded-lg shadow-md">
-      {error && <p className="text-red-500 mb-2">{error}</p>}
+    <div className="room-manager p-6 bg-white rounded-lg shadow-md space-y-6">
+      {error && <p className="text-red-500 mb-4">{error}</p>}
       {!currentRoom ? (
         <>
-          <div className="create-room mb-4">
-            <input
-              type="text"
-              value={newRoomName}
-              onChange={(e) => setNewRoomName(e.target.value)}
-              placeholder="New Room Name"
-              className="mr-2 p-2 border rounded"
-            />
-            <select
-              value={newRoomLanguage}
-              onChange={(e) => setNewRoomLanguage(e.target.value)}
-              className="mr-2 p-2 border rounded"
-            >
-              <option value="javascript">JavaScript</option>
-              <option value="python">Python</option>
-              <option value="java">Java</option>
-              <option value="go">Go</option>
-            </select>
-            <button
-              onClick={createRoom}
-              className="bg-blue-500 text-white p-2 rounded"
-            >
-              Create Room
-            </button>
+          <div className="create-room space-y-4">
+            <h3 className="text-lg font-semibold">Create a New Room</h3>
+            <div className="grid grid-cols-1 gap-4">
+              <input
+                type="text"
+                value={newRoomName}
+                onChange={(e) => setNewRoomName(e.target.value)}
+                placeholder="New Room Name"
+                className="p-2 border rounded w-full"
+              />
+              <select
+                value={newRoomLanguage}
+                onChange={(e) => setNewRoomLanguage(e.target.value)}
+                className="p-2 border rounded w-full"
+              >
+                <option value="javascript">JavaScript</option>
+                <option value="python">Python</option>
+                <option value="java">Java</option>
+                <option value="go">Go</option>
+              </select>
+              <button
+                onClick={createRoom}
+                className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition-colors w-full"
+              >
+                Create Room
+              </button>
+            </div>
           </div>
-          <div className="join-room mb-4">
-            <input
-              type="text"
-              value={joinRoomId}
-              onChange={(e) => setJoinRoomId(e.target.value)}
-              placeholder="6-character Room ID to Join"
-              className="mr-2 p-2 border rounded"
-            />
-            <button
-              onClick={() => joinRoom(joinRoomId)}
-              className="bg-green-500 text-white p-2 rounded"
-            >
-              Join Room
-            </button>
+          <div className="join-room space-y-4">
+            <h3 className="text-lg font-semibold">Join a Room</h3>
+            <div className="grid grid-cols-1 gap-4">
+              <input
+                type="text"
+                value={joinRoomId}
+                onChange={(e) => setJoinRoomId(e.target.value)}
+                placeholder="6-character Room ID to Join"
+                className="p-2 border rounded w-full"
+              />
+              <button
+                onClick={() => joinRoom(joinRoomId)}
+                className="bg-green-500 text-white p-2 rounded hover:bg-green-600 transition-colors w-full"
+              >
+                Join Room
+              </button>
+            </div>
           </div>
-          <div className="room-list">
-            <h3 className="text-lg font-bold mb-2">Available Rooms:</h3>
-            <ul>
+          <div className="room-list space-y-4">
+            <h3 className="text-lg font-semibold">Available Rooms:</h3>
+            <ul className="space-y-2">
               {rooms.map((room) => (
-                <li key={room.id} className="mb-1">
-                  {room.name} (ID: {room.id}, Language: {room.language}) -
+                <li key={room.id} className="flex justify-between items-center">
+                  <span>
+                    {room.name} (ID: {room.id}, Language: {room.language})
+                  </span>
                   <button
                     onClick={() => joinRoom(room.id)}
-                    className="ml-2 text-blue-500"
+                    className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition-colors"
                   >
                     Join
                   </button>
@@ -197,11 +205,11 @@ const RoomManager: React.FC<RoomManagerProps> = ({
           </div>
         </>
       ) : (
-        <div className="current-room">
-          <p>Current Room: {currentRoom}</p>
+        <div className="current-room space-y-4">
+          <p className="font-semibold">Current Room: {currentRoom}</p>
           <button
             onClick={leaveRoom}
-            className="bg-red-500 text-white p-2 rounded mt-2"
+            className="bg-red-500 text-white p-2 rounded hover:bg-red-600 transition-colors w-full"
           >
             Leave Room
           </button>
