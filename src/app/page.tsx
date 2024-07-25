@@ -39,9 +39,6 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-500 to-purple-600 p-6">
       <div className="container mx-auto">
-        <h1 className="text-4xl font-bold text-white mb-6 text-center">
-          Collaborative Code Editor with Voice Chat
-        </h1>
         <RoomManager
           currentRoom={currentRoom}
           setCurrentRoom={setCurrentRoom}
