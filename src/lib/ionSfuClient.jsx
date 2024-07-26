@@ -1,11 +1,8 @@
-import { Client, LocalStream, RemoteStream } from "ion-sdk-js";
+import { Client, LocalStream } from "ion-sdk-js";
 import { IonSFUJSONRPCSignal } from "ion-sdk-js/lib/signal/json-rpc-impl";
 
 class IonSfuClient {
-  private signal: IonSFUJSONRPCSignal;
-  private client: Client;
-
-  constructor(url: string) {
+  constructor(url) {
     this.signal = new IonSFUJSONRPCSignal(url);
     this.client = new Client(this.signal);
 
@@ -14,7 +11,7 @@ class IonSfuClient {
     this.signal.onerror = (error) => console.error("Signal error:", error);
   }
 
-  async connect(sessionId: string, uid: string): Promise<void> {
+  async connect(sessionId, uid) {
     return new Promise((resolve, reject) => {
       this.signal.onopen = async () => {
         try {
@@ -30,21 +27,26 @@ class IonSfuClient {
     });
   }
 
-  onTrack(callback: (track: MediaStreamTrack, stream: RemoteStream) => void) {
+  onTrack(callback) {
     this.client.ontrack = (track, stream) => {
       callback(track, stream);
     };
   }
 
-  async publishStream(
-    constraints: MediaStreamConstraints = { audio: true, video: false }
-  ): Promise<LocalStream> {
-    const localStream = await LocalStream.getUserMedia(constraints);
+  async publishStream(streamOrConstraints = { audio: true, video: false }) {
+    let localStream;
+
+    if (streamOrConstraints instanceof LocalStream) {
+      localStream = streamOrConstraints;
+    } else {
+      localStream = await LocalStream.getUserMedia(streamOrConstraints);
+    }
+
     await this.client.publish(localStream);
     return localStream;
   }
 
-  async cleanupStream(stream: LocalStream): Promise<void> {
+  async cleanupStream(stream) {
     try {
       await this.unpublishStream(stream);
       stream.getTracks().forEach((track) => {
@@ -56,16 +58,16 @@ class IonSfuClient {
     }
   }
 
-  async unpublishStream(stream: LocalStream): Promise<void> {
+  async unpublishStream(stream) {
     try {
-      await this.client.close();
+      await this.client.unpublish(stream);
     } catch (error) {
       console.error("Error unpublishing stream:", error);
       throw error;
     }
   }
 
-  close(): void {
+  close() {
     this.client.close();
     this.signal.close();
   }
