@@ -1,7 +1,7 @@
-
 import React, { useState } from "react";
 import { signUp, signIn } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
+import { AuthError, getErrorMessage } from "@/types";
 
 const Auth: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -46,7 +46,7 @@ const Auth: React.FC = () => {
         router.push("/");
       }
     } catch (error) {
-      setError(error.message);
+      setError(getErrorMessage(error));
     }
   };
 

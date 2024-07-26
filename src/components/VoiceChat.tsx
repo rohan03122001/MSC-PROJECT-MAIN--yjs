@@ -1,10 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import IonSfuClient from "@/lib/ionSfuClient";
 import { LocalStream, RemoteStream } from "ion-sdk-js";
-
-interface VoiceChatProps {
-  roomId: string;
-}
+import { getErrorMessage, VoiceChatProps } from "@/types";
 
 const VoiceChat: React.FC<VoiceChatProps> = ({ roomId }) => {
   const [client, setClient] = useState<IonSfuClient | null>(null);
@@ -36,7 +33,7 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ roomId }) => {
         await newClient.connect(roomId, uid);
         setIsConnected(true);
       } catch (error) {
-        console.error("Error connecting to room:", error);
+        console.error("Error connecting to room:", getErrorMessage(error));
       }
 
       newClient.onTrack((track, stream) => {
@@ -112,7 +109,7 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ roomId }) => {
         await client.cleanupStream(localStream);
         setLocalStream(null);
       } catch (error) {
-        console.error("Error unpublishing audio:", error);
+        console.error("Error connecting to room:", getErrorMessage(error));
       }
     }
   };

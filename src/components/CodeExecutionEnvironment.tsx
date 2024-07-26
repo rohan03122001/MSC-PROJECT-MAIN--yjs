@@ -1,19 +1,10 @@
 import React, { useState } from "react";
 import axios from "axios";
-
-interface CodeExecutionEnvironmentProps {
-  code: string;
-  language: string;
-}
-
-interface ExecutionResult {
-  stdout: string;
-  stderr: string;
-  compile_output: string;
-  message: string;
-  time: string;
-  memory: string;
-}
+import {
+  CodeExecutionEnvironmentProps,
+  ExecutionResult,
+  getErrorMessage,
+} from "@/types";
 
 // Map of supported languages to their Judge0 language IDs
 const languageIds: { [key: string]: number } = {
@@ -72,7 +63,7 @@ const CodeExecutionEnvironment: React.FC<CodeExecutionEnvironmentProps> = ({
       setResult(executionResult);
     } catch (err) {
       setError("An error occurred while executing the code.");
-      console.error(err);
+      console.error(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

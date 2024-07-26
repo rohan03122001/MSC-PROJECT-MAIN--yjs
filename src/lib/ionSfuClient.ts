@@ -1,4 +1,3 @@
-
 import { Client, LocalStream, RemoteStream } from "ion-sdk-js";
 import { IonSFUJSONRPCSignal } from "ion-sdk-js/lib/signal/json-rpc-impl";
 
@@ -59,7 +58,7 @@ class IonSfuClient {
 
   async unpublishStream(stream: LocalStream): Promise<void> {
     try {
-      await this.client.unpublish(stream);
+      await this.client.close();
     } catch (error) {
       console.error("Error unpublishing stream:", error);
       throw error;

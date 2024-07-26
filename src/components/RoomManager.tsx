@@ -1,19 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useRouter } from "next/navigation";
-
-interface Room {
-  id: string;
-  name: string;
-  language: string;
-  created_at: string;
-}
-
-interface RoomManagerProps {
-  currentRoom: string | null;
-  setCurrentRoom: (roomId: string | null) => void;
-  setCurrentLanguage: (language: string) => void;
-}
+import { Room, RoomManagerProps, getErrorMessage } from "@/types";
 
 const RoomManager: React.FC<RoomManagerProps> = ({
   currentRoom,
@@ -97,8 +85,8 @@ const RoomManager: React.FC<RoomManagerProps> = ({
         setError("An unexpected error occurred. Please try again.");
       }
     } catch (err) {
-      console.error("Unexpected error:", err);
-      setError(`An unexpected error occurred: ${err.message}`);
+      console.error("Unexpected error:", getErrorMessage(err));
+      setError(`An unexpected error occurred: ${getErrorMessage(err)}`);
     }
   }
 
