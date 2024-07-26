@@ -9,16 +9,16 @@ export const supabase: SupabaseClient = createClient(
 );
 
 export const signUp = async (email: string, password: string) => {
-  const { user, error } = await supabase.auth.signUp({ email, password });
-  return { user, error };
+  const { data, error } = await supabase.auth.signUp({ email, password });
+  return { user: data.user, error };
 };
 
 export const signIn = async (email: string, password: string) => {
-  const { user, error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
-  return { user, error };
+  return { user: data.user, error };
 };
 
 export const signOut = async () => {

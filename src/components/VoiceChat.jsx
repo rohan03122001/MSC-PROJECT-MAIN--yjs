@@ -1,18 +1,16 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import IonSfuClient from "@/lib/ionSfuClient";
-import { LocalStream, RemoteStream } from "ion-sdk-js";
-import { getErrorMessage, VoiceChatProps } from "@/types";
 
-const VoiceChat: React.FC<VoiceChatProps> = ({ roomId }) => {
-  const [client, setClient] = useState<IonSfuClient | null>(null);
+const VoiceChat = ({ roomId }) => {
+  const [client, setClient] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [localStream, setLocalStream] = useState<LocalStream | null>(null);
-  const [remoteStreams, setRemoteStreams] = useState<RemoteStream[]>([]);
-  const audioRefs = useRef<{ [key: string]: HTMLAudioElement | null }>({});
-  const localUidRef = useRef<string>("");
+  const [localStream, setLocalStream] = useState(null);
+  const [remoteStreams, setRemoteStreams] = useState([]);
+  const audioRefs = useRef({});
+  const localUidRef = useRef("");
 
   const isLocalStream = useCallback(
-    (streamId: string) => {
+    (streamId) => {
       return (
         streamId === localUidRef.current ||
         (localStream && streamId === localStream.id)
@@ -33,7 +31,7 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ roomId }) => {
         await newClient.connect(roomId, uid);
         setIsConnected(true);
       } catch (error) {
-        console.error("Error connecting to room:", getErrorMessage(error));
+        console.error("Error connecting to room:", error);
       }
 
       newClient.onTrack((track, stream) => {
@@ -74,7 +72,7 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ roomId }) => {
     remoteStreams.forEach((stream) => {
       if (!isLocalStream(stream.id)) {
         if (audioRefs.current[stream.id]) {
-          audioRefs.current[stream.id]!.srcObject = stream;
+          audioRefs.current[stream.id].srcObject = stream;
         } else {
           const audio = new Audio();
           audio.srcObject = stream;
@@ -109,12 +107,12 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ roomId }) => {
         await client.cleanupStream(localStream);
         setLocalStream(null);
       } catch (error) {
-        console.error("Error connecting to room:", getErrorMessage(error));
+        console.error("Error unpublishing audio:", error);
       }
     }
   };
 
-  const toggleMute = (stream: RemoteStream) => {
+  const toggleMute = (stream) => {
     const audioElement = audioRefs.current[stream.id];
     if (audioElement) {
       audioElement.muted = !audioElement.muted;
