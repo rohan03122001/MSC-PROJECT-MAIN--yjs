@@ -1,0 +1,12 @@
+FROM golang:1.19-alpine
+
+WORKDIR /app
+
+COPY . .
+
+RUN go build ./cmd/signal/json-rpc/main.go
+
+EXPOSE 7000
+EXPOSE 5000-5200/udp
+
+CMD ["./main", "-c", "config.toml"]
