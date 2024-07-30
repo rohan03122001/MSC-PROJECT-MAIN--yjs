@@ -56,7 +56,7 @@ function CollaborativeEditor({
       ydocRef.current = ydoc;
 
       const provider = new WebsocketProvider(
-        "wss://138.68.141.173/ws/", // Use this for local development
+        "wss://138.68.141.173/", // Use this for local development
         `monaco-room-${roomId}`,
         ydoc
       );
