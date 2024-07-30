@@ -35,7 +35,7 @@ class IonSfuClient {
         console.log(
           `IonSfuClient: Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})`
         );
-        setTimeout(() => this.initializeConnection(url), 2000);
+        setTimeout(() => this.initializeConnection(url), 10000);
       } else if (this.reconnectAttempts >= this.maxReconnectAttempts) {
         console.log(
           `IonSfuClient: Max reconnection attempts reached. Giving up.`

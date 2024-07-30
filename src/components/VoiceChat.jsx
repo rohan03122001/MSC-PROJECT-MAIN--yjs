@@ -30,8 +30,7 @@ const VoiceChat = ({ roomId }) => {
       console.log("VoiceChat: Initializing client...");
       setConnectionStatus("Initializing");
       try {
-        const wsUrl =
-          process.env.NEXT_PUBLIC_ION_SFU_WS_URL || "ws://localhost:7000/ws";
+        const wsUrl = "ws://localhost:7000/ws";
         console.log(`VoiceChat: Using WebSocket URL: ${wsUrl}`);
         ionClient = new IonSfuClient(wsUrl);
         if (isMounted) setClient(ionClient);
