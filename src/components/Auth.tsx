@@ -46,7 +46,9 @@ const Auth: React.FC = () => {
         const { error } = await signUp(email, password);
         if (error) {
           if (error.message.includes("rate limit")) {
-            setError("Too many signup attempts. Please try again later.");
+            setError(
+              "Too many signup attempts. Please try again after some time."
+            );
             setCountdown(20); // Set a 60-second countdown for rate limit
           } else {
             throw error;
