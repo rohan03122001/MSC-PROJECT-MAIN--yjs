@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { signUp, signIn } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import { AuthError, getErrorMessage } from "@/types";
@@ -11,14 +11,24 @@ const Auth: React.FC = () => {
   const [message, setMessage] = useState<string | null>(null);
   const router = useRouter();
   const [lastAttempt, setLastAttempt] = useState(0);
+  const [countdown, setCountdown] = useState(0);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (countdown > 0) {
+      timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [countdown]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Implement rate limiting
     const now = Date.now();
     if (now - lastAttempt < 60000) {
-      setError("Please wait a moment before trying again.");
+      const remainingTime = Math.ceil((60000 - (now - lastAttempt)) / 1000);
+      setCountdown(remainingTime);
+      setError(`Please wait before trying again.`);
       return;
     }
     setLastAttempt(now);
@@ -32,6 +42,7 @@ const Auth: React.FC = () => {
         if (error) {
           if (error.message.includes("rate limit")) {
             setError("Too many signup attempts. Please try again later.");
+            setCountdown(60); // Set a 60-second countdown for rate limit
           } else {
             throw error;
           }
@@ -87,10 +98,17 @@ const Auth: React.FC = () => {
             required
           />
         </div>
-        {error && <p className="text-red-500 mb-4">{error}</p>}
+        {error && (
+          <p className="text-red-500 mb-4">
+            {error}
+            {countdown > 0 && ` Please try again in ${countdown} seconds.`}
+          </p>
+        )}
+        {message && <p className="text-green-500 mb-4">{message}</p>}
         <button
           type="submit"
           className="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none focus:shadow-outline"
+          disabled={countdown > 0}
         >
           {isSignUp ? "Sign Up" : "Sign In"}
         </button>
