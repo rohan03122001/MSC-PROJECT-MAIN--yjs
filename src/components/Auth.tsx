@@ -16,7 +16,12 @@ const Auth: React.FC = () => {
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (countdown > 0) {
-      timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      timer = setTimeout(() => {
+        setCountdown(countdown - 1);
+        if (countdown === 1) {
+          setError(null); // Clear the error when countdown reaches 0
+        }
+      }, 1000);
     }
     return () => clearTimeout(timer);
   }, [countdown]);
@@ -25,8 +30,8 @@ const Auth: React.FC = () => {
     e.preventDefault();
 
     const now = Date.now();
-    if (now - lastAttempt < 60000) {
-      const remainingTime = Math.ceil((60000 - (now - lastAttempt)) / 1000);
+    if (now - lastAttempt < 20000) {
+      const remainingTime = Math.ceil((20000 - (now - lastAttempt)) / 1000);
       setCountdown(remainingTime);
       setError(`Please wait before trying again.`);
       return;
@@ -42,7 +47,7 @@ const Auth: React.FC = () => {
         if (error) {
           if (error.message.includes("rate limit")) {
             setError("Too many signup attempts. Please try again later.");
-            setCountdown(30); // Set a 60-second countdown for rate limit
+            setCountdown(20); // Set a 60-second countdown for rate limit
           } else {
             throw error;
           }
@@ -107,7 +112,7 @@ const Auth: React.FC = () => {
         {message && <p className="text-green-500 mb-4">{message}</p>}
         <button
           type="submit"
-          className="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none focus:shadow-outline"
+          className="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none focus:shadow-outline disabled:bg-gray-400 disabled:cursor-not-allowed"
           disabled={countdown > 0}
         >
           {isSignUp ? "Sign Up" : "Sign In"}
