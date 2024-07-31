@@ -45,9 +45,6 @@ export default function Home() {
           setCurrentLanguage={setCurrentLanguage}
         />
       </div>
-      <button className="fixed bottom-6 right-6 bg-blue-500 text-white rounded-full p-4 shadow-lg hover:bg-blue-600 transition-colors">
-        + New Room
-      </button>
     </div>
   );
 }

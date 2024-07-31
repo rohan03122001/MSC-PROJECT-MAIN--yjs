@@ -1,12 +1,11 @@
 "use client";
-
 import { useEffect } from "react";
 import "./globals.css";
 import { Inter } from "next/font/google";
 import Header from "@/components/Header";
 import { AuthProvider } from "@/lib/AuthContext";
 import loadMonacoLanguages from "@/lib/monaco-languages";
-import FeedbackRedirect from "@/components/FeedbackRedirect";
+import FeedbackNotification from "@/components/FeedbackNotification";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,7 +24,7 @@ export default function RootLayout({
         <AuthProvider>
           <Header />
           <main className="flex-grow">{children}</main>
-          <FeedbackRedirect />
+          <FeedbackNotification />
         </AuthProvider>
       </body>
     </html>
