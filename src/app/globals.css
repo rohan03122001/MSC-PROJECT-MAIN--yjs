@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 @layer utilities {
+  /* Custom gradient utility class */
   .bg-gradient-to-br {
     background-image: linear-gradient(
       to bottom right,
@@ -11,9 +12,11 @@
   }
 }
 
+/* Styles for remote selection in collaborative editing */
 .yRemoteSelection {
   background-color: rgba(250, 129, 0, 0.5);
 }
+
 .yRemoteSelectionHead {
   position: absolute;
   border-left: #ffa500 solid 2px;
@@ -22,6 +25,7 @@
   height: 100%;
   box-sizing: border-box;
 }
+
 .yRemoteSelectionHead::after {
   position: absolute;
   content: " ";
@@ -29,4 +33,19 @@
   border-radius: 4px;
   left: -4px;
   top: -5px;
+}
+
+@keyframes fadeInOut {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  10%,
+  90% {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in-out {
+  animation: fadeInOut 2s ease-in-out;
 }

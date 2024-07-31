@@ -1,41 +1,53 @@
 "use client";
 
 import { useState } from "react";
-import dynamic from "next/dynamic";
 import RoomManager from "@/components/RoomManager";
-
-const CollaborativeEditor = dynamic(
-  () => import("@/components/CollaborativeEditor"),
-  { ssr: false }
-);
-const VoiceChat = dynamic(() => import("@/components/VoiceChat"), {
-  ssr: false,
-});
+import { useAuth } from "@/lib/AuthContext";
+import Link from "next/link";
 
 export default function Home() {
   const [currentRoom, setCurrentRoom] = useState<string | null>(null);
+  const [currentLanguage, setCurrentLanguage] = useState<string>("javascript");
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        Loading...
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-white mb-6">
+            Welcome to CollabCode
+          </h1>
+          <Link
+            href="/auth"
+            className="bg-white text-indigo-600 font-semibold py-2 px-4 rounded-lg hover:bg-indigo-100 transition duration-300"
+          >
+            Sign In or Sign Up
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-500 to-purple-600">
-      <main className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold text-white mb-6 text-center">
-          Collaborative Code Editor with Voice Chat
-        </h1>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-500 to-purple-600 p-6">
+      <div className="container mx-auto">
         <RoomManager
           currentRoom={currentRoom}
           setCurrentRoom={setCurrentRoom}
+          setCurrentLanguage={setCurrentLanguage}
         />
-        {currentRoom && (
-          <>
-            <div className="bg-white rounded-lg shadow-xl overflow-hidden mt-6">
-              <CollaborativeEditor roomId={currentRoom} />
-            </div>
-            <div className="mt-6">
-              <VoiceChat roomId={currentRoom} />
-            </div>
-          </>
-        )}
-      </main>
+      </div>
+      <button className="fixed bottom-6 right-6 bg-blue-500 text-white rounded-full p-4 shadow-lg hover:bg-blue-600 transition-colors">
+        + New Room
+      </button>
     </div>
   );
 }
