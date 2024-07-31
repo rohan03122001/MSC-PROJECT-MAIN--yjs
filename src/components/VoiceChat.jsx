@@ -30,7 +30,7 @@ const VoiceChat = ({ roomId }) => {
       console.log("VoiceChat: Initializing client...");
       setConnectionStatus("Initializing");
       try {
-        const wsUrl = `wss://138.68.141.173/ws`;
+        const wsUrl = `wss://${process.env.NEXT_PUBLIC_VM_IP}/ws`;
         console.log(`VoiceChat: Using WebSocket URL: ${wsUrl}`);
         ionClient = new IonSfuClient(wsUrl);
         if (isMounted) setClient(ionClient);
