@@ -40,7 +40,7 @@ export default function RoomPage() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600">
         <div className="text-center">
           <h1 className="text-4xl font-bold text-white mb-6">
-            Welcome to CollabCode
+            Welcome to DisCoder
           </h1>
           <Link
             href="/auth"

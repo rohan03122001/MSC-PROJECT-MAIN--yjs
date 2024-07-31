@@ -4,6 +4,9 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { signOut } from "@/lib/supabaseClient";
 import { useRouter, usePathname } from "next/navigation";
+import Link from "next/link";
+
+const FEEDBACK_FORM_URL = "https://forms.gle/ba9U4nFTw9ArqPqp9";
 
 const Header: React.FC = () => {
   const { user } = useAuth();
@@ -41,7 +44,7 @@ const Header: React.FC = () => {
   return (
     <header className="sticky top-0 z-10 bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-        <h2 className="text-2xl font-bold">CollabCode</h2>
+        <h2 className="text-2xl font-bold">DisCoder</h2>
 
         <div className="flex items-center space-x-4">
           {roomCode && (
@@ -76,6 +79,15 @@ const Header: React.FC = () => {
               </button>
             </>
           )}
+
+          <Link
+            href={FEEDBACK_FORM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600 transition-colors duration-300"
+          >
+            Provide Feedback
+          </Link>
           {user && (
             <>
               <span className="hidden md:inline">{user.email}</span>

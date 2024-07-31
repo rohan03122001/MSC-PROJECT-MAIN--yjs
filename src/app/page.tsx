@@ -23,7 +23,7 @@ export default function Home() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600">
         <div className="text-center">
           <h1 className="text-4xl font-bold text-white mb-6">
-            Welcome to CollabCode
+            Welcome to DisCoder
           </h1>
           <Link
             href="/auth"
@@ -45,9 +45,6 @@ export default function Home() {
           setCurrentLanguage={setCurrentLanguage}
         />
       </div>
-      <button className="fixed bottom-6 right-6 bg-blue-500 text-white rounded-full p-4 shadow-lg hover:bg-blue-600 transition-colors">
-        + New Room
-      </button>
     </div>
   );
 }
