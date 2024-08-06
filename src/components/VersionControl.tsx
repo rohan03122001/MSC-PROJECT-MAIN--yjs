@@ -1,7 +1,16 @@
-// components/VersionControl.tsx
-
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import {
+  Button,
+  Typography,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemSecondaryAction,
+  Paper,
+} from "@mui/material";
+import SaveIcon from "@mui/icons-material/Save";
+import RestoreIcon from "@mui/icons-material/Restore";
 
 interface Version {
   id: number;
@@ -78,33 +87,44 @@ const VersionControl: React.FC<VersionControlProps> = ({
   const revertToVersion = (snapshot: string) => {
     onRevert(snapshot);
   };
-
   return (
-    <div className="version-control space-y-4">
-      <h3 className="text-lg font-semibold">Version Control</h3>
-      <button
+    <Paper elevation={3} sx={{ p: 3, mt: 3 }}>
+      <Typography variant="h6" gutterBottom>
+        Version Control
+      </Typography>
+      <Button
+        variant="contained"
+        color="primary"
+        startIcon={<SaveIcon />}
         onClick={saveVersion}
-        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors w-full"
+        fullWidth
+        sx={{ mb: 2 }}
       >
         Save Current Version
-      </button>
-      <div className="versions space-y-2">
-        <h4 className="font-medium">Previous Versions:</h4>
-        <ul className="space-y-2">
-          {versions.map((version) => (
-            <li key={version.id} className="flex justify-between items-center">
-              <span>{new Date(version.created_at).toLocaleString()}</span>
-              <button
+      </Button>
+      <Typography variant="subtitle1" gutterBottom>
+        Previous Versions:
+      </Typography>
+      <List>
+        {versions.map((version) => (
+          <ListItem key={version.id}>
+            <ListItemText
+              primary={new Date(version.created_at).toLocaleString()}
+            />
+            <ListItemSecondaryAction>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<RestoreIcon />}
                 onClick={() => revertToVersion(version.snapshot)}
-                className="bg-gray-200 px-3 py-1 rounded text-sm hover:bg-gray-300 transition-colors"
               >
                 Revert
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
+              </Button>
+            </ListItemSecondaryAction>
+          </ListItem>
+        ))}
+      </List>
+    </Paper>
   );
 };
 

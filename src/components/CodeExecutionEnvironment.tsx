@@ -5,6 +5,8 @@ import {
   ExecutionResult,
   getErrorMessage,
 } from "@/types";
+import { Button, Typography, Paper, Box } from "@mui/material";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 
 // Map of supported languages to their Judge0 language IDs
 const languageIds: { [key: string]: number } = {
@@ -70,31 +72,44 @@ const CodeExecutionEnvironment: React.FC<CodeExecutionEnvironmentProps> = ({
   };
 
   return (
-    <div className="mt-6 p-6 bg-white rounded-lg shadow-md space-y-4">
-      <h3 className="text-xl font-semibold">Code Execution</h3>
-      <button
+    <Paper elevation={3} sx={{ p: 3, mt: 3 }}>
+      <Typography variant="h6" gutterBottom>
+        Code Execution
+      </Typography>
+      <Button
+        variant="contained"
+        color="primary"
+        startIcon={<PlayArrowIcon />}
         onClick={executeCode}
-        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors w-full"
         disabled={loading}
+        fullWidth
       >
         {loading ? "Executing..." : "Execute Code"}
-      </button>
-      {error && <p className="text-red-500">{error}</p>}
-      {result && (
-        <div className="space-y-2">
-          <h4 className="font-semibold">Output:</h4>
-          <pre className="bg-gray-100 p-4 rounded whitespace-pre-wrap">
-            {result.stdout ||
-              result.stderr ||
-              result.compile_output ||
-              result.message}
-          </pre>
-          <p>
-            Execution time: {result.time} | Memory used: {result.memory}
-          </p>
-        </div>
+      </Button>
+      {error && (
+        <Typography color="error" sx={{ mt: 2 }}>
+          {error}
+        </Typography>
       )}
-    </div>
+      {result && (
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="subtitle1" gutterBottom>
+            Output:
+          </Typography>
+          <Paper variant="outlined" sx={{ p: 2, backgroundColor: "grey.900" }}>
+            <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+              {result.stdout ||
+                result.stderr ||
+                result.compile_output ||
+                result.message}
+            </pre>
+          </Paper>
+          <Typography variant="body2" sx={{ mt: 1 }}>
+            Execution time: {result.time} | Memory used: {result.memory}
+          </Typography>
+        </Box>
+      )}
+    </Paper>
   );
 };
 

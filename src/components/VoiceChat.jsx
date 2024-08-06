@@ -1,5 +1,19 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import IonSfuClient from "@/lib/ionSfuClient";
+import {
+  Paper,
+  Typography,
+  Button,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemSecondaryAction,
+  IconButton,
+} from "@mui/material";
+import MicIcon from "@mui/icons-material/Mic";
+import MicOffIcon from "@mui/icons-material/MicOff";
+import VolumeUpIcon from "@mui/icons-material/VolumeUp";
+import VolumeOffIcon from "@mui/icons-material/VolumeOff";
 
 const VoiceChat = ({ roomId }) => {
   const [client, setClient] = useState(null);
@@ -171,54 +185,76 @@ const VoiceChat = ({ roomId }) => {
   };
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md space-y-4">
-      <h2 className="text-2xl font-bold">Voice Chat</h2>
-      <p>Status: {connectionStatus}</p>
+    <Paper elevation={3} sx={{ p: 3 }}>
+      <Typography variant="h5" gutterBottom>
+        Voice Chat
+      </Typography>
+      <Typography variant="body1" gutterBottom>
+        Status: {connectionStatus}
+      </Typography>
       {connectionError && (
-        <p className="text-red-500">Error: {connectionError}</p>
+        <Typography color="error" gutterBottom>
+          Error: {connectionError}
+        </Typography>
       )}
       {isConnected ? (
-        <div className="space-y-4">
-          <p className="font-semibold">Connected to room: {roomId}</p>
+        <div>
+          <Typography variant="body1" gutterBottom>
+            Connected to room: {roomId}
+          </Typography>
           {localStream ? (
-            <button
+            <Button
+              variant="contained"
+              color="error"
+              startIcon={<MicOffIcon />}
               onClick={stopAudio}
-              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors w-full"
+              fullWidth
             >
               Stop Audio
-            </button>
+            </Button>
           ) : (
-            <button
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<MicIcon />}
               onClick={startAudio}
-              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors w-full"
+              fullWidth
             >
               Start Audio
-            </button>
+            </Button>
           )}
-          <div className="space-y-2">
-            <h3 className="text-xl font-semibold">Remote Streams:</h3>
+          <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
+            Remote Streams:
+          </Typography>
+          <List>
             {remoteStreams
               .filter((stream) => !isLocalStream(stream.id))
               .map((stream) => (
-                <div
-                  key={stream.id}
-                  className="flex justify-between items-center"
-                >
-                  <span>Remote Stream: {stream.id.slice(0, 6)}...</span>
-                  <button
-                    onClick={() => toggleMute(stream)}
-                    className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition-colors"
-                  >
-                    Toggle Mute
-                  </button>
-                </div>
+                <ListItem key={stream.id}>
+                  <ListItemText
+                    primary={`Remote Stream: ${stream.id.slice(0, 6)}...`}
+                  />
+                  <ListItemSecondaryAction>
+                    <IconButton
+                      edge="end"
+                      aria-label="toggle mute"
+                      onClick={() => toggleMute(stream)}
+                    >
+                      {audioRefs.current[stream.id]?.muted ? (
+                        <VolumeOffIcon />
+                      ) : (
+                        <VolumeUpIcon />
+                      )}
+                    </IconButton>
+                  </ListItemSecondaryAction>
+                </ListItem>
               ))}
-          </div>
+          </List>
         </div>
       ) : (
-        <p>Connecting...</p>
+        <Typography variant="body1">Connecting...</Typography>
       )}
-    </div>
+    </Paper>
   );
 };
 

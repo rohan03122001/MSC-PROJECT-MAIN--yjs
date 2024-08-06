@@ -2,6 +2,20 @@ import React, { useState, useEffect } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import { Room, RoomManagerProps, getErrorMessage } from "@/types";
+import {
+  TextField,
+  Button,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemSecondaryAction,
+  Typography,
+  Paper,
+  Box,
+} from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import JoinFullIcon from "@mui/icons-material/JoinFull";
+import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 
 const RoomManager: React.FC<RoomManagerProps> = ({
   currentRoom,
@@ -123,87 +137,120 @@ const RoomManager: React.FC<RoomManagerProps> = ({
   }
 
   return (
-    <div className="room-manager p-6 bg-white rounded-lg shadow-md space-y-6">
-      {error && <p className="text-red-500 mb-4">{error}</p>}
+    <Paper elevation={3} sx={{ p: 3 }}>
+      <Typography variant="h5" gutterBottom>
+        Room Manager
+      </Typography>
+      {error && (
+        <Typography color="error" gutterBottom>
+          {error}
+        </Typography>
+      )}
       {!currentRoom ? (
-        <>
-          <div className="create-room space-y-4">
-            <h3 className="text-lg font-semibold">Create a New Room</h3>
-            <div className="grid grid-cols-1 gap-4">
-              <input
-                type="text"
-                value={newRoomName}
-                onChange={(e) => setNewRoomName(e.target.value)}
-                placeholder="New Room Name"
-                className="p-2 border rounded w-full"
-              />
-              <select
-                value={newRoomLanguage}
-                onChange={(e) => setNewRoomLanguage(e.target.value)}
-                className="p-2 border rounded w-full"
-              >
-                <option value="javascript">JavaScript</option>
-                <option value="python">Python</option>
-                <option value="java">Java</option>
-                <option value="go">Go</option>
-              </select>
-              <button
-                onClick={createRoom}
-                className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition-colors w-full"
-              >
-                Create Room
-              </button>
-            </div>
-          </div>
-          <div className="join-room space-y-4">
-            <h3 className="text-lg font-semibold">Join a Room</h3>
-            <div className="grid grid-cols-1 gap-4">
-              <input
-                type="text"
-                value={joinRoomId}
-                onChange={(e) => setJoinRoomId(e.target.value)}
-                placeholder="6-character Room ID to Join"
-                className="p-2 border rounded w-full"
-              />
-              <button
-                onClick={() => joinRoom(joinRoomId)}
-                className="bg-green-500 text-white p-2 rounded hover:bg-green-600 transition-colors w-full"
-              >
-                Join Room
-              </button>
-            </div>
-          </div>
-          <div className="room-list space-y-4">
-            <h3 className="text-lg font-semibold">Available Rooms:</h3>
-            <ul className="space-y-2">
+        <Box>
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              Create a New Room
+            </Typography>
+            <TextField
+              fullWidth
+              variant="outlined"
+              value={newRoomName}
+              onChange={(e) => setNewRoomName(e.target.value)}
+              placeholder="New Room Name"
+              margin="normal"
+            />
+            <TextField
+              fullWidth
+              select
+              variant="outlined"
+              value={newRoomLanguage}
+              onChange={(e) => setNewRoomLanguage(e.target.value)}
+              SelectProps={{
+                native: true,
+              }}
+              margin="normal"
+            >
+              <option value="javascript">JavaScript</option>
+              <option value="python">Python</option>
+              <option value="java">Java</option>
+              <option value="go">Go</option>
+            </TextField>
+            <Button
+              fullWidth
+              variant="contained"
+              color="primary"
+              onClick={createRoom}
+              startIcon={<AddIcon />}
+            >
+              Create Room
+            </Button>
+          </Box>
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              Join a Room
+            </Typography>
+            <TextField
+              fullWidth
+              variant="outlined"
+              value={joinRoomId}
+              onChange={(e) => setJoinRoomId(e.target.value)}
+              placeholder="6-character Room ID to Join"
+              margin="normal"
+            />
+            <Button
+              fullWidth
+              variant="contained"
+              color="secondary"
+              onClick={() => joinRoom(joinRoomId)}
+              startIcon={<JoinFullIcon />}
+            >
+              Join Room
+            </Button>
+          </Box>
+          <Box>
+            <Typography variant="h6" gutterBottom>
+              Available Rooms:
+            </Typography>
+            <List>
               {rooms.map((room) => (
-                <li key={room.id} className="flex justify-between items-center">
-                  <span>
-                    {room.name} (ID: {room.id}, Language: {room.language})
-                  </span>
-                  <button
-                    onClick={() => joinRoom(room.id)}
-                    className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition-colors"
-                  >
-                    Join
-                  </button>
-                </li>
+                <ListItem key={room.id}>
+                  <ListItemText
+                    primary={room.name}
+                    secondary={`ID: ${room.id}, Language: ${room.language}`}
+                  />
+                  <ListItemSecondaryAction>
+                    <Button
+                      variant="outlined"
+                      color="primary"
+                      onClick={() => joinRoom(room.id)}
+                      size="small"
+                    >
+                      Join
+                    </Button>
+                  </ListItemSecondaryAction>
+                </ListItem>
               ))}
-            </ul>
-          </div>
-        </>
+            </List>
+          </Box>
+        </Box>
       ) : (
-        <div className="current-room space-y-4">
-          <p className="font-semibold">Current Room: {currentRoom}</p>
-          <button
+        <Box>
+          <Typography variant="body1" gutterBottom>
+            Current Room: {currentRoom}
+          </Typography>
+          <Button
+            fullWidth
+            variant="contained"
+            color="error"
             onClick={leaveRoom}
-            className="bg-red-500 text-white p-2 rounded hover:bg-red-600 transition-colors w-full"
+            startIcon={<ExitToAppIcon />}
           >
             Leave Room
-          </button>
-        </div>
+          </Button>
+        </Box>
       )}
-    </div>
+    </Paper>
   );
 };
 

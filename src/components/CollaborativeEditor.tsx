@@ -1,16 +1,26 @@
-// components/CollaborativeEditor.tsx
-
 import React, { useEffect, useRef, useState } from "react";
 import * as Y from "yjs";
 import { WebsocketProvider } from "y-websocket";
 import { MonacoBinding } from "y-monaco";
 import dynamic from "next/dynamic";
-
-const Editor = dynamic(() => import("@monaco-editor/react"), { ssr: false });
+import {
+  Paper,
+  Typography,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+} from "@mui/material";
 import CodeExecutionEnvironment from "./CodeExecutionEnvironment";
 import VersionControl from "./VersionControl";
 import { supabase } from "@/lib/supabaseClient";
 
+const Editor = dynamic(() => import("@monaco-editor/react"), { ssr: false });
+
+interface CollaborativeEditorProps {
+  roomId: string;
+  initialLanguage: string;
+}
 interface CollaborativeEditorProps {
   roomId: string;
   initialLanguage: string;
@@ -105,21 +115,25 @@ function CollaborativeEditor({
       ytext.insert(0, newCode);
     }
   };
-
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <select
+    <Paper elevation={3} sx={{ p: 3 }}>
+      <Typography variant="h5" gutterBottom>
+        Collaborative Editor
+      </Typography>
+      <FormControl fullWidth margin="normal">
+        <InputLabel id="language-select-label">Language</InputLabel>
+        <Select
+          labelId="language-select-label"
           value={language}
-          onChange={(e) => setLanguage(e.target.value)}
-          className="p-2 border rounded"
+          onChange={(e) => setLanguage(e.target.value as string)}
+          label="Language"
         >
-          <option value="javascript">JavaScript</option>
-          <option value="python">Python</option>
-          <option value="java">Java</option>
-          <option value="go">Go</option>
-        </select>
-      </div>
+          <MenuItem value="javascript">JavaScript</MenuItem>
+          <MenuItem value="python">Python</MenuItem>
+          <MenuItem value="java">Java</MenuItem>
+          <MenuItem value="go">Go</MenuItem>
+        </Select>
+      </FormControl>
       <Editor
         height="50vh"
         language={language}
@@ -143,7 +157,7 @@ function CollaborativeEditor({
         onRevert={handleRevert}
       />
       <CodeExecutionEnvironment code={code} language={language} />
-    </div>
+    </Paper>
   );
 }
 
