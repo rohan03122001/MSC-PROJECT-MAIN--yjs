@@ -24,7 +24,6 @@ const VoiceChat = ({ roomId }) => {
   useEffect(() => {
     let ionClient = null;
     let isMounted = true;
-    let isConnecting = false;
 
     const initializeClient = async () => {
       console.log("VoiceChat: Initializing client...");
@@ -35,19 +34,21 @@ const VoiceChat = ({ roomId }) => {
         ionClient = new IonSfuClient(wsUrl);
         if (isMounted) setClient(ionClient);
 
+        ionClient.setOnConnectionLost(() => {
+          if (isMounted) {
+            setConnectionStatus("Connection lost");
+            setIsConnected(false);
+          }
+        });
+
         const uid = `user-${Math.random().toString(36).substr(2, 9)}`;
         console.log(`VoiceChat: Generated UID: ${uid}`);
         localUidRef.current = uid;
 
         console.log(`VoiceChat: Attempting to connect to room ${roomId}...`);
         setConnectionStatus("Connecting");
-        isConnecting = true;
 
-        const connectionPromise = ionClient.connect(roomId, uid);
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error("Connection timeout")), 10000)
-        );
-        await Promise.race([connectionPromise, timeoutPromise]);
+        await ionClient.connect(roomId, uid);
 
         if (isMounted) {
           console.log(`VoiceChat: Connected successfully to room ${roomId}`);
@@ -74,8 +75,6 @@ const VoiceChat = ({ roomId }) => {
           setConnectionStatus("Connection failed");
           setConnectionError(error.message || "Unknown error occurred");
         }
-      } finally {
-        isConnecting = false;
       }
     };
 
@@ -83,7 +82,7 @@ const VoiceChat = ({ roomId }) => {
 
     return () => {
       isMounted = false;
-      if (ionClient && !isConnecting) {
+      if (ionClient) {
         console.log("VoiceChat: Closing client connection");
         ionClient.close();
       }
