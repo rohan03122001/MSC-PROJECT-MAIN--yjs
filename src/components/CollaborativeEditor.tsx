@@ -16,21 +16,6 @@ interface CollaborativeEditorProps {
   initialLanguage: string;
 }
 
-const getStarterCode = (lang: string) => {
-  switch (lang) {
-    case "javascript":
-      return "// JavaScript starter code\nconsole.log('Hello, World!');";
-    case "python":
-      return "# Python starter code\nprint('Hello, World!')";
-    case "java":
-      return 'public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello, World!");\n    }\n}';
-    case "go":
-      return 'package main\n\nimport "fmt"\n\nfunc main() {\n    fmt.Println("Hello, World!")\n}';
-    default:
-      return "// Start coding here...";
-  }
-};
-
 function CollaborativeEditor({
   roomId,
   initialLanguage,
@@ -76,24 +61,20 @@ function CollaborativeEditor({
       );
       bindingRef.current = binding;
 
-      // Fetch initial content from Supabase only if the document is empty
-      if (ytext.length === 0) {
-        const { data, error } = await supabase
-          .from("code_versions")
-          .select("snapshot")
-          .eq("room_id", roomId)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .single();
+      // Fetch initial content from Supabase
+      const { data, error } = await supabase
+        .from("code_versions")
+        .select("snapshot")
+        .eq("room_id", roomId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
 
-        if (error) {
-          console.error("Error fetching latest code:", error);
-          ytext.insert(0, getStarterCode(language));
-        } else if (data) {
-          ytext.insert(0, data.snapshot);
-        } else {
-          ytext.insert(0, getStarterCode(language));
-        }
+      if (error) {
+        console.error("Error fetching latest code:", error);
+      } else if (data && data.snapshot) {
+        ytext.delete(0, ytext.length);
+        ytext.insert(0, data.snapshot);
       }
 
       // Update local state when the shared document changes
