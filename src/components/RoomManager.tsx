@@ -12,10 +12,17 @@ import {
   Typography,
   Paper,
   Box,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  IconButton,
+  Divider,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import JoinFullIcon from "@mui/icons-material/JoinFull";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
+import RefreshIcon from "@mui/icons-material/Refresh";
 
 const RoomManager: React.FC<RoomManagerProps> = ({
   currentRoom,
@@ -137,8 +144,8 @@ const RoomManager: React.FC<RoomManagerProps> = ({
   }
 
   return (
-    <Paper elevation={3} sx={{ p: 3 }}>
-      <Typography variant="h5" gutterBottom>
+    <Paper elevation={3} sx={{ p: 3, bgcolor: "#1E1E1E" }}>
+      <Typography variant="h5" gutterBottom sx={{ color: "#90CAF9" }}>
         Room Manager
       </Typography>
       {error && (
@@ -149,7 +156,7 @@ const RoomManager: React.FC<RoomManagerProps> = ({
       {!currentRoom ? (
         <Box>
           <Box sx={{ mb: 3 }}>
-            <Typography variant="h6" gutterBottom>
+            <Typography variant="h6" gutterBottom sx={{ color: "#E0E0E0" }}>
               Create a New Room
             </Typography>
             <TextField
@@ -159,35 +166,63 @@ const RoomManager: React.FC<RoomManagerProps> = ({
               onChange={(e) => setNewRoomName(e.target.value)}
               placeholder="New Room Name"
               margin="normal"
-            />
-            <TextField
-              fullWidth
-              select
-              variant="outlined"
-              value={newRoomLanguage}
-              onChange={(e) => setNewRoomLanguage(e.target.value)}
-              SelectProps={{
-                native: true,
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  "& fieldset": {
+                    borderColor: "#424242",
+                  },
+                  "&:hover fieldset": {
+                    borderColor: "#616161",
+                  },
+                },
+                "& .MuiInputBase-input": {
+                  color: "#E0E0E0",
+                },
               }}
-              margin="normal"
-            >
-              <option value="javascript">JavaScript</option>
-              <option value="python">Python</option>
-              <option value="java">Java</option>
-              <option value="go">Go</option>
-            </TextField>
+            />
+            <FormControl fullWidth margin="normal">
+              <InputLabel id="language-select-label" sx={{ color: "#E0E0E0" }}>
+                Language
+              </InputLabel>
+              <Select
+                labelId="language-select-label"
+                value={newRoomLanguage}
+                onChange={(e) => setNewRoomLanguage(e.target.value as string)}
+                label="Language"
+                sx={{
+                  color: "#E0E0E0",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#424242",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#616161",
+                  },
+                }}
+              >
+                <MenuItem value="javascript">JavaScript</MenuItem>
+                <MenuItem value="python">Python</MenuItem>
+                <MenuItem value="java">Java</MenuItem>
+                <MenuItem value="go">Go</MenuItem>
+              </Select>
+            </FormControl>
             <Button
               fullWidth
               variant="contained"
-              color="primary"
               onClick={createRoom}
               startIcon={<AddIcon />}
+              sx={{
+                mt: 2,
+                bgcolor: "#424242",
+                color: "#E0E0E0",
+                "&:hover": { bgcolor: "#616161", color: "#E0E0E0" },
+              }}
             >
               Create Room
             </Button>
           </Box>
+          <Divider sx={{ my: 3, bgcolor: "#424242" }} />
           <Box sx={{ mb: 3 }}>
-            <Typography variant="h6" gutterBottom>
+            <Typography variant="h6" gutterBottom sx={{ color: "#E0E0E0" }}>
               Join a Room
             </Typography>
             <TextField
@@ -197,34 +232,59 @@ const RoomManager: React.FC<RoomManagerProps> = ({
               onChange={(e) => setJoinRoomId(e.target.value)}
               placeholder="6-character Room ID to Join"
               margin="normal"
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  "& fieldset": {
+                    borderColor: "#424242",
+                  },
+                  "&:hover fieldset": {
+                    borderColor: "#616161",
+                  },
+                },
+                "& .MuiInputBase-input": {
+                  color: "#E0E0E0",
+                },
+              }}
             />
             <Button
               fullWidth
               variant="contained"
-              color="secondary"
               onClick={() => joinRoom(joinRoomId)}
               startIcon={<JoinFullIcon />}
+              sx={{
+                mt: 2,
+                bgcolor: "#424242",
+                color: "#E0E0E0",
+                "&:hover": { bgcolor: "#616161", color: "#E0E0E0" },
+              }}
             >
               Join Room
             </Button>
           </Box>
+          <Divider sx={{ my: 3, bgcolor: "#424242" }} />
           <Box>
-            <Typography variant="h6" gutterBottom>
-              Available Rooms:
+            <Typography variant="h6" gutterBottom sx={{ color: "#E0E0E0" }}>
+              Available Rooms
             </Typography>
             <List>
               {rooms.map((room) => (
-                <ListItem key={room.id}>
+                <ListItem
+                  key={room.id}
+                  divider
+                  sx={{ borderBottomColor: "#424242" }}
+                >
                   <ListItemText
                     primary={room.name}
                     secondary={`ID: ${room.id}, Language: ${room.language}`}
+                    primaryTypographyProps={{ color: "#E0E0E0" }}
+                    secondaryTypographyProps={{ color: "#BDBDBD" }}
                   />
                   <ListItemSecondaryAction>
                     <Button
                       variant="outlined"
-                      color="primary"
                       onClick={() => joinRoom(room.id)}
                       size="small"
+                      sx={{ color: "#90CAF9", borderColor: "#90CAF9" }}
                     >
                       Join
                     </Button>
@@ -232,19 +292,28 @@ const RoomManager: React.FC<RoomManagerProps> = ({
                 </ListItem>
               ))}
             </List>
+            <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
+              <IconButton onClick={fetchRooms} sx={{ color: "#90CAF9" }}>
+                <RefreshIcon />
+              </IconButton>
+            </Box>
           </Box>
         </Box>
       ) : (
         <Box>
-          <Typography variant="body1" gutterBottom>
+          <Typography variant="body1" gutterBottom sx={{ color: "#E0E0E0" }}>
             Current Room: {currentRoom}
           </Typography>
           <Button
             fullWidth
             variant="contained"
-            color="error"
             onClick={leaveRoom}
             startIcon={<ExitToAppIcon />}
+            sx={{
+              mt: 2,
+              bgcolor: "#D32F2F",
+              "&:hover": { bgcolor: "#C62828" },
+            }}
           >
             Leave Room
           </Button>
