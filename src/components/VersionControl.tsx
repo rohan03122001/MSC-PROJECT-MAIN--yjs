@@ -7,24 +7,25 @@ import {
   ListItem,
   ListItemText,
   ListItemSecondaryAction,
+  Paper,
   Box,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
   TextField,
   Snackbar,
   Alert,
-  IconButton,
 } from "@mui/material";
-import {
-  Save as SaveIcon,
-  Restore as RestoreIcon,
-  Delete as DeleteIcon,
-} from "@mui/icons-material";
-import { motion, AnimatePresence } from "framer-motion";
+import SaveIcon from "@mui/icons-material/Save";
+import RestoreIcon from "@mui/icons-material/Restore";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 interface Version {
+  name: string;
   id: number;
   created_at: string;
   snapshot: string;
-  name: string;
 }
 
 interface VersionControlProps {
@@ -39,6 +40,7 @@ const VersionControl: React.FC<VersionControlProps> = ({
   onRevert,
 }) => {
   const [versions, setVersions] = useState<Version[]>([]);
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [versionName, setVersionName] = useState("");
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -95,11 +97,6 @@ const VersionControl: React.FC<VersionControlProps> = ({
   };
 
   const saveVersion = async () => {
-    if (!versionName.trim()) {
-      showSnackbar("Please enter a version name", "error");
-      return;
-    }
-
     const { error } = await supabase
       .from("code_versions")
       .insert({ room_id: roomId, snapshot: currentCode, name: versionName });
@@ -109,8 +106,9 @@ const VersionControl: React.FC<VersionControlProps> = ({
       showSnackbar("Error saving version", "error");
     } else {
       showSnackbar("Version saved successfully", "success");
-      setVersionName("");
     }
+    setSaveDialogOpen(false);
+    setVersionName("");
   };
 
   const revertToVersion = (snapshot: string) => {
@@ -131,6 +129,7 @@ const VersionControl: React.FC<VersionControlProps> = ({
       showSnackbar("Version deleted successfully", "success");
     }
   };
+
   const showSnackbar = (message: string, severity: "success" | "error") => {
     setSnackbarMessage(message);
     setSnackbarSeverity(severity);
@@ -138,66 +137,75 @@ const VersionControl: React.FC<VersionControlProps> = ({
   };
 
   return (
-    <Box sx={{ maxHeight: "80vh", overflowY: "auto" }}>
+    <Paper elevation={3} sx={{ p: 3, mt: 3 }}>
       <Typography variant="h6" gutterBottom>
         Version Control
       </Typography>
-      <Box sx={{ display: "flex", mb: 2 }}>
-        <TextField
-          value={versionName}
-          onChange={(e) => setVersionName(e.target.value)}
-          placeholder="Version name"
-          variant="outlined"
-          size="small"
-          fullWidth
-          sx={{ mr: 1 }}
-        />
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<SaveIcon />}
-          onClick={saveVersion}
-        >
-          Save
-        </Button>
-      </Box>
+      <Button
+        variant="contained"
+        color="primary"
+        startIcon={<SaveIcon />}
+        onClick={() => setSaveDialogOpen(true)}
+        fullWidth
+        sx={{ mb: 2 }}
+      >
+        Save Current Version
+      </Button>
+      <Typography variant="subtitle1" gutterBottom>
+        Previous Versions:
+      </Typography>
       <List>
-        <AnimatePresence>
-          {versions.map((version) => (
-            <motion.div
-              key={version.id}
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              <ListItem>
-                <ListItemText
-                  primary={version.name || `Version ${version.id}`}
-                  secondary={new Date(version.created_at).toLocaleString()}
-                />
-                <ListItemSecondaryAction>
-                  <IconButton
-                    edge="end"
-                    aria-label="revert"
-                    onClick={() => revertToVersion(version.snapshot)}
-                    sx={{ mr: 1 }}
-                  >
-                    <RestoreIcon />
-                  </IconButton>
-                  <IconButton
-                    edge="end"
-                    aria-label="delete"
-                    onClick={() => deleteVersion(version.id)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </ListItemSecondaryAction>
-              </ListItem>
-            </motion.div>
-          ))}
-        </AnimatePresence>
+        {versions.map((version) => (
+          <ListItem key={version.id}>
+            <ListItemText
+              primary={version.name || `Version ${version.id}`}
+              secondary={new Date(version.created_at).toLocaleString()}
+            />
+            <ListItemSecondaryAction>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<RestoreIcon />}
+                onClick={() => revertToVersion(version.snapshot)}
+                sx={{ mr: 1 }}
+              >
+                Revert
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                color="error"
+                startIcon={<DeleteIcon />}
+                onClick={() => deleteVersion(version.id)}
+              >
+                Delete
+              </Button>
+            </ListItemSecondaryAction>
+          </ListItem>
+        ))}
       </List>
+      <Dialog open={saveDialogOpen} onClose={() => setSaveDialogOpen(false)}>
+        <DialogTitle>Save Version</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            id="name"
+            label="Version Name"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={versionName}
+            onChange={(e) => setVersionName(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSaveDialogOpen(false)}>Cancel</Button>
+          <Button onClick={saveVersion} variant="contained" color="primary">
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}
@@ -212,7 +220,7 @@ const VersionControl: React.FC<VersionControlProps> = ({
           {snackbarMessage}
         </Alert>
       </Snackbar>
-    </Box>
+    </Paper>
   );
 };
 

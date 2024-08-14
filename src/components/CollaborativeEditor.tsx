@@ -14,30 +14,32 @@ import {
   Chip,
   Tooltip,
   IconButton,
-  Collapse,
+  Drawer,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
 } from "@mui/material";
 import {
   PersonOutline,
   Settings,
-  ExpandMore,
-  ExpandLess,
+  Brightness4,
+  Brightness7,
 } from "@mui/icons-material";
 import CodeExecutionEnvironment from "./CodeExecutionEnvironment";
+import VersionControl from "./VersionControl";
 import { supabase } from "@/lib/supabaseClient";
-import { motion, AnimatePresence } from "framer-motion";
 
 const Editor = dynamic(() => import("@monaco-editor/react"), { ssr: false });
 
 interface CollaborativeEditorProps {
   roomId: string;
   initialLanguage: string;
-  onCodeChange: (code: string) => void;
 }
 
 function CollaborativeEditor({
   roomId,
   initialLanguage,
-  onCodeChange,
 }: CollaborativeEditorProps) {
   const [language, setLanguage] = useState(initialLanguage || "javascript");
   const [editor, setEditor] = useState<any | null>(null);
@@ -48,7 +50,6 @@ function CollaborativeEditor({
   const [users, setUsers] = useState<string[]>([]);
   const [theme, setTheme] = useState<"vs-dark" | "light">("vs-dark");
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [expandExecution, setExpandExecution] = useState(false);
 
   useEffect(() => {
     const setupCollaboration = async () => {
@@ -109,9 +110,7 @@ function CollaborativeEditor({
 
       // Update local state when the shared document changes
       ytext.observe(() => {
-        const newCode = ytext.toString();
-        setCode(newCode);
-        onCodeChange(newCode);
+        setCode(ytext.toString());
       });
     };
 
@@ -143,94 +142,66 @@ function CollaborativeEditor({
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      <Paper elevation={3} sx={{ p: 3 }}>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            mb: 2,
-          }}
+    <Paper elevation={3} sx={{ p: 3 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 2,
+        }}
+      >
+        <Typography variant="h5">Collaborative Editor</Typography>
+        <Box>
+          {users.map((user, index) => (
+            <Tooltip key={index} title={user}>
+              <Chip
+                icon={<PersonOutline />}
+                label={user.charAt(0).toUpperCase()}
+                sx={{ mr: 1 }}
+              />
+            </Tooltip>
+          ))}
+        </Box>
+      </Box>
+      <FormControl fullWidth margin="normal">
+        <InputLabel id="language-select-label">Language</InputLabel>
+        <Select
+          labelId="language-select-label"
+          value={language}
+          onChange={(e) => setLanguage(e.target.value as string)}
+          label="Language"
         >
-          <Typography variant="h5">Collaborative Editor</Typography>
-          <Box>
-            <AnimatePresence>
-              {users.map((user, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.5 }}
-                  transition={{ duration: 0.3 }}
-                  style={{ display: "inline-block", marginRight: "8px" }}
-                >
-                  <Tooltip title={user}>
-                    <Chip
-                      icon={<PersonOutline />}
-                      label={user.charAt(0).toUpperCase()}
-                    />
-                  </Tooltip>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-            <IconButton onClick={() => setSettingsOpen(true)}>
-              <Settings />
-            </IconButton>
-          </Box>
-        </Box>
-        <FormControl fullWidth margin="normal">
-          <InputLabel id="language-select-label">Language</InputLabel>
-          <Select
-            labelId="language-select-label"
-            value={language}
-            onChange={(e) => setLanguage(e.target.value as string)}
-            label="Language"
-          >
-            <MenuItem value="javascript">JavaScript</MenuItem>
-            <MenuItem value="python">Python</MenuItem>
-            <MenuItem value="java">Java</MenuItem>
-            <MenuItem value="go">Go</MenuItem>
-          </Select>
-        </FormControl>
-        <Box sx={{ height: "60vh", mb: 2 }}>
-          <Editor
-            height="100%"
-            language={language}
-            theme={theme}
-            options={{
-              minimap: { enabled: false },
-              fontSize: 16,
-              lineNumbers: "on",
-              roundedSelection: false,
-              scrollBeyondLastLine: false,
-              readOnly: false,
-            }}
-            onMount={(editor) => {
-              setEditor(editor);
-            }}
-            onChange={handleEditorChange}
-          />
-        </Box>
-        <Box sx={{ mt: 2 }}>
-          <Typography
-            variant="h6"
-            onClick={() => setExpandExecution(!expandExecution)}
-            sx={{ cursor: "pointer", display: "flex", alignItems: "center" }}
-          >
-            Code Execution
-            {expandExecution ? <ExpandLess /> : <ExpandMore />}
-          </Typography>
-          <Collapse in={expandExecution}>
-            <CodeExecutionEnvironment code={code} language={language} />
-          </Collapse>
-        </Box>
-      </Paper>
-    </motion.div>
+          <MenuItem value="javascript">JavaScript</MenuItem>
+          <MenuItem value="python">Python</MenuItem>
+          <MenuItem value="java">Java</MenuItem>
+          <MenuItem value="go">Go</MenuItem>
+        </Select>
+      </FormControl>
+      <Editor
+        height="50vh"
+        language={language}
+        theme={theme}
+        options={{
+          minimap: { enabled: false },
+          fontSize: 16,
+          lineNumbers: "on",
+          roundedSelection: false,
+          scrollBeyondLastLine: false,
+          readOnly: false,
+        }}
+        onMount={(editor) => {
+          setEditor(editor);
+        }}
+        onChange={handleEditorChange}
+      />
+      <VersionControl
+        roomId={roomId}
+        currentCode={code}
+        onRevert={handleRevert}
+      />
+      <CodeExecutionEnvironment code={code} language={language} />
+    </Paper>
   );
 }
 
