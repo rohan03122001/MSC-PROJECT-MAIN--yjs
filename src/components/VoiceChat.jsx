@@ -9,6 +9,11 @@ import {
   ListItemText,
   ListItemSecondaryAction,
   IconButton,
+  Box,
+  Tooltip,
+  CircularProgress,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import MicIcon from "@mui/icons-material/Mic";
 import MicOffIcon from "@mui/icons-material/MicOff";
@@ -24,16 +29,16 @@ const VoiceChat = ({ roomId }) => {
   const [connectionError, setConnectionError] = useState(null);
   const audioRefs = useRef({});
   const localUidRef = useRef("");
+  const [isMuted, setIsMuted] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("info");
 
-  const isLocalStream = useCallback(
-    (streamId) => {
-      return (
-        streamId === localUidRef.current ||
-        (localStream && streamId === localStream.id)
-      );
-    },
-    [localStream]
-  );
+  const showSnackbar = (message, severity = "info") => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
+  };
 
   useEffect(() => {
     let ionClient = null;
@@ -52,6 +57,10 @@ const VoiceChat = ({ roomId }) => {
           if (isMounted) {
             setConnectionStatus("Connection lost");
             setIsConnected(false);
+            showSnackbar(
+              "Voice chat connection lost. Trying to reconnect...",
+              "warning"
+            );
           }
         });
 
@@ -69,6 +78,7 @@ const VoiceChat = ({ roomId }) => {
           setIsConnected(true);
           setConnectionStatus("Connected");
           setConnectionError(null);
+          showSnackbar("Connected to voice chat", "success");
         }
 
         ionClient.onTrack((track, stream) => {
@@ -88,6 +98,7 @@ const VoiceChat = ({ roomId }) => {
         if (isMounted) {
           setConnectionStatus("Connection failed");
           setConnectionError(error.message || "Unknown error occurred");
+          showSnackbar("Failed to connect to voice chat", "error");
         }
       }
     };
@@ -133,7 +144,17 @@ const VoiceChat = ({ roomId }) => {
         }
       }
     });
-  }, [remoteStreams, isLocalStream]);
+  }, [remoteStreams]);
+
+  const isLocalStream = useCallback(
+    (streamId) => {
+      return (
+        streamId === localUidRef.current ||
+        (localStream && streamId === localStream.id)
+      );
+    },
+    [localStream]
+  );
 
   const startAudio = async () => {
     console.log("VoiceChat: Starting audio");
@@ -153,9 +174,12 @@ const VoiceChat = ({ roomId }) => {
           console.log(`VoiceChat: Local stream created with ID ${stream.id}`);
           setLocalStream(stream);
         }
+        setIsMuted(false);
+        showSnackbar("Microphone turned on", "success");
       }
     } catch (error) {
       console.error("VoiceChat: Error publishing audio:", error);
+      showSnackbar("Failed to turn on microphone", "error");
     }
   };
 
@@ -166,11 +190,14 @@ const VoiceChat = ({ roomId }) => {
         console.log(`VoiceChat: Cleaning up local stream ${localStream.id}`);
         await client.cleanupStream(localStream);
         setLocalStream(null);
+        setIsMuted(true);
+        showSnackbar("Microphone turned off", "info");
       } catch (error) {
         console.error(
           `VoiceChat: Error unpublishing audio for stream ${localStream.id}:`,
           error
         );
+        showSnackbar("Failed to turn off microphone", "error");
       }
     }
   };
@@ -181,6 +208,10 @@ const VoiceChat = ({ roomId }) => {
     if (audioElement) {
       audioElement.muted = !audioElement.muted;
       console.log(`VoiceChat: Stream ${stream.id} muted:`, audioElement.muted);
+      showSnackbar(
+        `${audioElement.muted ? "Muted" : "Unmuted"} remote user`,
+        "info"
+      );
     }
   };
 
@@ -198,62 +229,71 @@ const VoiceChat = ({ roomId }) => {
         </Typography>
       )}
       {isConnected ? (
-        <div>
+        <Box>
           <Typography variant="body1" gutterBottom>
             Connected to room: {roomId}
           </Typography>
-          {localStream ? (
-            <Button
-              variant="contained"
-              color="error"
-              startIcon={<MicOffIcon />}
-              onClick={stopAudio}
-              fullWidth
-            >
-              Stop Audio
-            </Button>
-          ) : (
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<MicIcon />}
-              onClick={startAudio}
-              fullWidth
-            >
-              Start Audio
-            </Button>
-          )}
+          <Button
+            variant="contained"
+            color={localStream ? "error" : "primary"}
+            startIcon={localStream ? <MicOffIcon /> : <MicIcon />}
+            onClick={localStream ? stopAudio : startAudio}
+            fullWidth
+            sx={{ mb: 2 }}
+          >
+            {localStream ? "Stop Audio" : "Start Audio"}
+          </Button>
           <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
-            Remote Streams:
+            Remote Users:
           </Typography>
           <List>
             {remoteStreams
               .filter((stream) => !isLocalStream(stream.id))
               .map((stream) => (
                 <ListItem key={stream.id}>
-                  <ListItemText
-                    primary={`Remote Stream: ${stream.id.slice(0, 6)}...`}
-                  />
+                  <ListItemText primary={`User ${stream.id.slice(0, 6)}...`} />
                   <ListItemSecondaryAction>
-                    <IconButton
-                      edge="end"
-                      aria-label="toggle mute"
-                      onClick={() => toggleMute(stream)}
+                    <Tooltip
+                      title={
+                        audioRefs.current[stream.id]?.muted ? "Unmute" : "Mute"
+                      }
                     >
-                      {audioRefs.current[stream.id]?.muted ? (
-                        <VolumeOffIcon />
-                      ) : (
-                        <VolumeUpIcon />
-                      )}
-                    </IconButton>
+                      <IconButton
+                        edge="end"
+                        aria-label="toggle mute"
+                        onClick={() => toggleMute(stream)}
+                      >
+                        {audioRefs.current[stream.id]?.muted ? (
+                          <VolumeOffIcon />
+                        ) : (
+                          <VolumeUpIcon />
+                        )}
+                      </IconButton>
+                    </Tooltip>
                   </ListItemSecondaryAction>
                 </ListItem>
               ))}
           </List>
-        </div>
+        </Box>
       ) : (
-        <Typography variant="body1">Connecting...</Typography>
+        <Box sx={{ display: "flex", justifyContent: "center" }}>
+          <CircularProgress />
+        </Box>
       )}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Paper>
   );
 };

@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { signOut } from "@/lib/supabaseClient";
@@ -12,11 +10,17 @@ import {
   Button,
   IconButton,
   Tooltip,
+  Menu,
+  MenuItem,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
-import ExitToAppIcon from "@mui/icons-material/ExitToApp";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import FeedbackIcon from "@mui/icons-material/Feedback";
-import DashboardIcon from "@mui/icons-material/Dashboard";
+import {
+  ExitToApp as ExitToAppIcon,
+  ContentCopy as ContentCopyIcon,
+  Feedback as FeedbackIcon,
+  Menu as MenuIcon,
+} from "@mui/icons-material";
 
 const FEEDBACK_FORM_URL = "https://forms.gle/ba9U4nFTw9ArqPqp9";
 
@@ -26,6 +30,9 @@ const Header: React.FC = () => {
   const pathname = usePathname();
   const [roomCode, setRoomCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   useEffect(() => {
     const parts = pathname.split("/");
@@ -53,56 +60,109 @@ const Header: React.FC = () => {
     }
   };
 
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
   return (
-    <AppBar position="static">
+    <AppBar position="static" color="primary" elevation={0}>
       <Toolbar>
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+        <Typography
+          variant="h6"
+          component={Link}
+          href="/"
+          sx={{
+            flexGrow: 1,
+            textDecoration: "none",
+            color: "inherit",
+            fontWeight: "bold",
+          }}
+        >
           DisCoder
         </Typography>
-        {user && (
-          <Tooltip title="Dashboard">
-            <IconButton color="inherit" component={Link} href="/dashboard">
-              <DashboardIcon />
+        {isMobile ? (
+          <>
+            <IconButton
+              edge="end"
+              color="inherit"
+              aria-label="menu"
+              onClick={handleMenuOpen}
+            >
+              <MenuIcon />
             </IconButton>
-          </Tooltip>
-        )}
-        {roomCode && (
-          <>
-            <Tooltip title={copied ? "Copied!" : "Copy Room Code"}>
-              <Button
-                color="inherit"
-                onClick={copyRoomCode}
-                startIcon={<ContentCopyIcon />}
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleMenuClose}
+            >
+              {roomCode && (
+                <MenuItem onClick={copyRoomCode}>
+                  <ContentCopyIcon sx={{ mr: 1 }} />
+                  {copied ? "Copied!" : "Copy Room Code"}
+                </MenuItem>
+              )}
+              <MenuItem
+                component={Link}
+                href={FEEDBACK_FORM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                {roomCode}
-              </Button>
-            </Tooltip>
-            <Button color="error" onClick={handleLeaveRoom}>
-              Leave Room
-            </Button>
+                <FeedbackIcon sx={{ mr: 1 }} />
+                Provide Feedback
+              </MenuItem>
+              {user && (
+                <MenuItem onClick={handleSignOut}>
+                  <ExitToAppIcon sx={{ mr: 1 }} />
+                  Sign Out
+                </MenuItem>
+              )}
+            </Menu>
           </>
-        )}
-        <Tooltip title="Provide Feedback">
-          <IconButton
-            color="inherit"
-            component={Link}
-            href={FEEDBACK_FORM_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <FeedbackIcon />
-          </IconButton>
-        </Tooltip>
-        {user && (
+        ) : (
           <>
-            <Typography variant="body2" sx={{ mr: 2 }}>
-              {user.email}
-            </Typography>
-            <Tooltip title="Sign Out">
-              <IconButton color="inherit" onClick={handleSignOut}>
-                <ExitToAppIcon />
+            {roomCode && (
+              <>
+                <Tooltip title={copied ? "Copied!" : "Copy Room Code"}>
+                  <Button
+                    color="inherit"
+                    onClick={copyRoomCode}
+                    startIcon={<ContentCopyIcon />}
+                  >
+                    {roomCode}
+                  </Button>
+                </Tooltip>
+                <Button color="error" onClick={handleLeaveRoom}>
+                  Leave Room
+                </Button>
+              </>
+            )}
+            <Tooltip title="Provide Feedback">
+              <IconButton
+                color="inherit"
+                component={Link}
+                href={FEEDBACK_FORM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <FeedbackIcon />
               </IconButton>
             </Tooltip>
+            {user && (
+              <>
+                <Typography variant="body2" sx={{ mr: 2 }}>
+                  {user.email}
+                </Typography>
+                <Tooltip title="Sign Out">
+                  <IconButton color="inherit" onClick={handleSignOut}>
+                    <ExitToAppIcon />
+                  </IconButton>
+                </Tooltip>
+              </>
+            )}
           </>
         )}
       </Toolbar>

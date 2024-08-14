@@ -18,11 +18,18 @@ import {
   InputLabel,
   IconButton,
   Divider,
+  Snackbar,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import JoinFullIcon from "@mui/icons-material/JoinFull";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import RefreshIcon from "@mui/icons-material/Refresh";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const RoomManager: React.FC<RoomManagerProps> = ({
   currentRoom,
@@ -34,6 +41,9 @@ const RoomManager: React.FC<RoomManagerProps> = ({
   const [newRoomLanguage, setNewRoomLanguage] = useState("javascript");
   const [joinRoomId, setJoinRoomId] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [roomToDelete, setRoomToDelete] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -100,6 +110,7 @@ const RoomManager: React.FC<RoomManagerProps> = ({
         setCurrentRoom(data.id);
         setCurrentLanguage(data.language);
         setError(null);
+        setSuccessMessage(`Room "${data.name}" created successfully!`);
         router.push(`/room/${data.id}`);
       } else {
         console.error("Room created but no data returned");
@@ -131,6 +142,7 @@ const RoomManager: React.FC<RoomManagerProps> = ({
       setCurrentLanguage(data.language);
       setJoinRoomId("");
       setError(null);
+      setSuccessMessage(`Joined room "${data.name}" successfully!`);
       router.push(`/room/${data.id}`);
     } else {
       console.error("Room not found");
@@ -143,16 +155,49 @@ const RoomManager: React.FC<RoomManagerProps> = ({
     router.push("/");
   }
 
+  async function deleteRoom(roomId: string) {
+    try {
+      const { error } = await supabase.from("rooms").delete().eq("id", roomId);
+
+      if (error) {
+        console.error("Error deleting room:", error);
+        setError(`Failed to delete room: ${error.message}`);
+      } else {
+        setSuccessMessage("Room deleted successfully!");
+        fetchRooms();
+      }
+    } catch (err) {
+      console.error("Unexpected error:", getErrorMessage(err));
+      setError(`An unexpected error occurred: ${getErrorMessage(err)}`);
+    }
+    setDeleteDialogOpen(false);
+    setRoomToDelete(null);
+  }
+
   return (
     <Paper elevation={3} sx={{ p: 3, bgcolor: "#1E1E1E" }}>
       <Typography variant="h5" gutterBottom sx={{ color: "#90CAF9" }}>
         Room Manager
       </Typography>
-      {error && (
-        <Typography color="error" gutterBottom>
-          {error}
-        </Typography>
-      )}
+      <Snackbar
+        open={!!error || !!successMessage}
+        autoHideDuration={6000}
+        onClose={() => {
+          setError(null);
+          setSuccessMessage(null);
+        }}
+      >
+        <Alert
+          onClose={() => {
+            setError(null);
+            setSuccessMessage(null);
+          }}
+          severity={error ? "error" : "success"}
+          sx={{ width: "100%" }}
+        >
+          {error || successMessage}
+        </Alert>
+      </Snackbar>
       {!currentRoom ? (
         <Box>
           <Box sx={{ mb: 3 }}>
@@ -284,10 +329,21 @@ const RoomManager: React.FC<RoomManagerProps> = ({
                       variant="outlined"
                       onClick={() => joinRoom(room.id)}
                       size="small"
-                      sx={{ color: "#90CAF9", borderColor: "#90CAF9" }}
+                      sx={{ color: "#90CAF9", borderColor: "#90CAF9", mr: 1 }}
                     >
                       Join
                     </Button>
+                    <IconButton
+                      edge="end"
+                      aria-label="delete"
+                      onClick={() => {
+                        setRoomToDelete(room.id);
+                        setDeleteDialogOpen(true);
+                      }}
+                      sx={{ color: "#F44336" }}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
                   </ListItemSecondaryAction>
                 </ListItem>
               ))}
@@ -319,6 +375,32 @@ const RoomManager: React.FC<RoomManagerProps> = ({
           </Button>
         </Box>
       )}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">{"Delete Room?"}</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete this room? This action cannot be
+            undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)} color="primary">
+            Cancel
+          </Button>
+          <Button
+            onClick={() => roomToDelete && deleteRoom(roomToDelete)}
+            color="error"
+            autoFocus
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Paper>
   );
 };

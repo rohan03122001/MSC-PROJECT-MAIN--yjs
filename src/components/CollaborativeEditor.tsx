@@ -10,17 +10,28 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Box,
+  Chip,
+  Tooltip,
+  IconButton,
+  Drawer,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
 } from "@mui/material";
+import {
+  PersonOutline,
+  Settings,
+  Brightness4,
+  Brightness7,
+} from "@mui/icons-material";
 import CodeExecutionEnvironment from "./CodeExecutionEnvironment";
 import VersionControl from "./VersionControl";
 import { supabase } from "@/lib/supabaseClient";
 
 const Editor = dynamic(() => import("@monaco-editor/react"), { ssr: false });
 
-interface CollaborativeEditorProps {
-  roomId: string;
-  initialLanguage: string;
-}
 interface CollaborativeEditorProps {
   roomId: string;
   initialLanguage: string;
@@ -36,6 +47,9 @@ function CollaborativeEditor({
   const ydocRef = useRef<Y.Doc | null>(null);
   const providerRef = useRef<WebsocketProvider | null>(null);
   const bindingRef = useRef<MonacoBinding | null>(null);
+  const [users, setUsers] = useState<string[]>([]);
+  const [theme, setTheme] = useState<"vs-dark" | "light">("vs-dark");
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   useEffect(() => {
     const setupCollaboration = async () => {
@@ -59,6 +73,13 @@ function CollaborativeEditor({
 
       provider.on("status", (event: { status: string }) => {
         console.log("WebSocket connection status:", event.status);
+      });
+
+      provider.awareness.on("change", () => {
+        const clients = Array.from(provider.awareness.getStates().values());
+        setUsers(
+          clients.map((client: any) => client.user?.name || "Anonymous")
+        );
       });
 
       const ytext = ydoc.getText("monaco");
@@ -115,11 +136,34 @@ function CollaborativeEditor({
       ytext.insert(0, newCode);
     }
   };
+
+  const toggleTheme = () => {
+    setTheme(theme === "vs-dark" ? "light" : "vs-dark");
+  };
+
   return (
     <Paper elevation={3} sx={{ p: 3 }}>
-      <Typography variant="h5" gutterBottom>
-        Collaborative Editor
-      </Typography>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 2,
+        }}
+      >
+        <Typography variant="h5">Collaborative Editor</Typography>
+        <Box>
+          {users.map((user, index) => (
+            <Tooltip key={index} title={user}>
+              <Chip
+                icon={<PersonOutline />}
+                label={user.charAt(0).toUpperCase()}
+                sx={{ mr: 1 }}
+              />
+            </Tooltip>
+          ))}
+        </Box>
+      </Box>
       <FormControl fullWidth margin="normal">
         <InputLabel id="language-select-label">Language</InputLabel>
         <Select
@@ -137,7 +181,7 @@ function CollaborativeEditor({
       <Editor
         height="50vh"
         language={language}
-        theme="vs-dark"
+        theme={theme}
         options={{
           minimap: { enabled: false },
           fontSize: 16,

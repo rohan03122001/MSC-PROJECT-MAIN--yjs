@@ -11,6 +11,7 @@ import {
   Alert,
   CircularProgress,
   Paper,
+  useTheme,
 } from "@mui/material";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 
@@ -24,6 +25,7 @@ const Auth: React.FC = () => {
   const [lastAttempt, setLastAttempt] = useState(0);
   const [countdown, setCountdown] = useState(0);
   const [loading, setLoading] = useState(false);
+  const theme = useTheme();
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -38,8 +40,26 @@ const Auth: React.FC = () => {
     return () => clearTimeout(timer);
   }, [countdown]);
 
+  const validateForm = () => {
+    if (!email || !password) {
+      setError("Please fill in all fields.");
+      return false;
+    }
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      setError("Please enter a valid email address.");
+      return false;
+    }
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long.");
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateForm()) return;
+
     setLoading(true);
 
     const now = Date.now();
@@ -86,7 +106,16 @@ const Auth: React.FC = () => {
 
   return (
     <Container component="main" maxWidth="xs">
-      <Paper elevation={6} sx={{ mt: 8, p: 4, bgcolor: "background.paper" }}>
+      <Paper
+        elevation={6}
+        sx={{
+          mt: 8,
+          p: 4,
+          bgcolor: "background.paper",
+          borderRadius: 2,
+          boxShadow: 3,
+        }}
+      >
         <Box
           sx={{
             display: "flex",
@@ -95,16 +124,27 @@ const Auth: React.FC = () => {
           }}
         >
           <LockOutlinedIcon
-            sx={{ fontSize: 40, mb: 2, color: "primary.main" }}
+            sx={{
+              fontSize: 40,
+              mb: 2,
+              color: "primary.main",
+              bgcolor: "background.paper",
+              p: 1,
+              borderRadius: "50%",
+            }}
           />
           <Typography
             component="h1"
             variant="h5"
-            sx={{ color: "primary.main" }}
+            sx={{ color: "primary.main", mb: 3 }}
           >
             {isSignUp ? "Sign Up" : "Sign In"}
           </Typography>
-          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            sx={{ width: "100%", mt: 1 }}
+          >
             <TextField
               margin="normal"
               required
@@ -168,12 +208,15 @@ const Auth: React.FC = () => {
             <Button
               type="submit"
               fullWidth
-              variant="outlined"
+              variant="contained"
               sx={{
                 mt: 3,
                 mb: 2,
-                color: "primary.main",
-                borderColor: "primary.main",
+                bgcolor: "primary.main",
+                color: "background.paper",
+                "&:hover": {
+                  bgcolor: "primary.dark",
+                },
               }}
               disabled={loading || countdown > 0}
             >
@@ -194,13 +237,17 @@ const Auth: React.FC = () => {
               </Typography>
             )}
             <Box sx={{ mt: 2, textAlign: "center" }}>
-              <Typography variant="body2" sx={{ color: "secondary.main" }}>
+              <Typography variant="body2" sx={{ color: "text.secondary" }}>
                 {isSignUp
                   ? "Already have an account?"
                   : "Don't have an account?"}
                 <Button
                   onClick={() => setIsSignUp(!isSignUp)}
-                  sx={{ ml: 1, color: "primary.main" }}
+                  sx={{
+                    ml: 1,
+                    color: "primary.main",
+                    textTransform: "none",
+                  }}
                 >
                   {isSignUp ? "Sign In" : "Sign Up"}
                 </Button>

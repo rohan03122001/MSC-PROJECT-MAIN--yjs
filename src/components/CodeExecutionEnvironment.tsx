@@ -5,10 +5,18 @@ import {
   ExecutionResult,
   getErrorMessage,
 } from "@/types";
-import { Button, Typography, Paper, Box } from "@mui/material";
+import {
+  Button,
+  Typography,
+  Paper,
+  Box,
+  CircularProgress,
+  Collapse,
+} from "@mui/material";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 
-// Map of supported languages to their Judge0 language IDs
 const languageIds: { [key: string]: number } = {
   javascript: 63,
   python: 71,
@@ -23,12 +31,12 @@ const CodeExecutionEnvironment: React.FC<CodeExecutionEnvironmentProps> = ({
   const [result, setResult] = useState<ExecutionResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState(false);
 
   const executeCode = async () => {
     setLoading(true);
     setError(null);
     try {
-      // Submit code execution request
       const response = await axios.post(
         "https://judge0-ce.p.rapidapi.com/submissions",
         {
@@ -47,7 +55,6 @@ const CodeExecutionEnvironment: React.FC<CodeExecutionEnvironmentProps> = ({
 
       const token = response.data.token;
 
-      // Poll for execution results
       let executionResult;
       do {
         const statusResponse = await axios.get(
@@ -63,6 +70,7 @@ const CodeExecutionEnvironment: React.FC<CodeExecutionEnvironmentProps> = ({
       } while (executionResult.status.id <= 2);
 
       setResult(executionResult);
+      setExpanded(true);
     } catch (err) {
       setError("An error occurred while executing the code.");
       console.error(getErrorMessage(err));
@@ -73,19 +81,28 @@ const CodeExecutionEnvironment: React.FC<CodeExecutionEnvironmentProps> = ({
 
   return (
     <Paper elevation={3} sx={{ p: 3, mt: 3 }}>
-      <Typography variant="h6" gutterBottom>
-        Code Execution
-      </Typography>
-      <Button
-        variant="contained"
-        color="primary"
-        startIcon={<PlayArrowIcon />}
-        onClick={executeCode}
-        disabled={loading}
-        fullWidth
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
       >
-        {loading ? "Executing..." : "Execute Code"}
-      </Button>
+        <Typography variant="h6" gutterBottom>
+          Code Execution
+        </Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={
+            loading ? <CircularProgress size={20} /> : <PlayArrowIcon />
+          }
+          onClick={executeCode}
+          disabled={loading}
+        >
+          {loading ? "Executing..." : "Execute Code"}
+        </Button>
+      </Box>
       {error && (
         <Typography color="error" sx={{ mt: 2 }}>
           {error}
@@ -93,20 +110,34 @@ const CodeExecutionEnvironment: React.FC<CodeExecutionEnvironmentProps> = ({
       )}
       {result && (
         <Box sx={{ mt: 2 }}>
-          <Typography variant="subtitle1" gutterBottom>
-            Output:
-          </Typography>
-          <Paper variant="outlined" sx={{ p: 2, backgroundColor: "grey.900" }}>
-            <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
-              {result.stdout ||
-                result.stderr ||
-                result.compile_output ||
-                result.message}
-            </pre>
-          </Paper>
-          <Typography variant="body2" sx={{ mt: 1 }}>
-            Execution time: {result.time} | Memory used: {result.memory}
-          </Typography>
+          <Button
+            onClick={() => setExpanded(!expanded)}
+            startIcon={expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+          >
+            {expanded ? "Hide Output" : "Show Output"}
+          </Button>
+          <Collapse in={expanded}>
+            <Paper variant="outlined" sx={{ p: 2, mt: 2, bgcolor: "grey.900" }}>
+              <Typography variant="subtitle1" gutterBottom>
+                Output:
+              </Typography>
+              <pre
+                style={{
+                  whiteSpace: "pre-wrap",
+                  wordBreak: "break-word",
+                  color: "white",
+                }}
+              >
+                {result.stdout ||
+                  result.stderr ||
+                  result.compile_output ||
+                  result.message}
+              </pre>
+              <Typography variant="body2" sx={{ mt: 1, color: "grey.400" }}>
+                Execution time: {result.time} | Memory used: {result.memory}
+              </Typography>
+            </Paper>
+          </Collapse>
         </Box>
       )}
     </Paper>
