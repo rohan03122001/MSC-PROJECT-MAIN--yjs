@@ -16,6 +16,7 @@ import {
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import FeedbackIcon from "@mui/icons-material/Feedback";
+import DashboardIcon from "@mui/icons-material/Dashboard";
 
 const FEEDBACK_FORM_URL = "https://forms.gle/ba9U4nFTw9ArqPqp9";
 
@@ -58,6 +59,13 @@ const Header: React.FC = () => {
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
           DisCoder
         </Typography>
+        {user && (
+          <Tooltip title="Dashboard">
+            <IconButton color="inherit" component={Link} href="/dashboard">
+              <DashboardIcon />
+            </IconButton>
+          </Tooltip>
+        )}
         {roomCode && (
           <>
             <Tooltip title={copied ? "Copied!" : "Copy Room Code"}>

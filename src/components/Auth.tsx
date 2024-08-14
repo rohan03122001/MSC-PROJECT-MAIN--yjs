@@ -1,4 +1,3 @@
-// components/Auth.tsx
 import React, { useState, useEffect } from "react";
 import { signUp, signIn } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
