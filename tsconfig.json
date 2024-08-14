@@ -21,6 +21,14 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/lib/ionSfuClient.jsx", "src/components/VoiceChat.jsx"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.jsx",
+    ".next/types/**/*.ts",
+    "src/lib/ionSfuClient.jsx",
+    "src/components/VoiceChat.jsx"
+  ],
   "exclude": ["node_modules"]
 }
