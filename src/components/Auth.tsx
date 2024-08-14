@@ -1,7 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { signUp, signIn } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
-import { AuthError, getErrorMessage } from "@/types";
+import { getErrorMessage } from "@/types";
+import {
+  Button,
+  TextField,
+  Typography,
+  Box,
+  Container,
+  Alert,
+  CircularProgress,
+  Paper,
+  useTheme,
+} from "@mui/material";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 
 const Auth: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -12,6 +24,8 @@ const Auth: React.FC = () => {
   const router = useRouter();
   const [lastAttempt, setLastAttempt] = useState(0);
   const [countdown, setCountdown] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const theme = useTheme();
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -19,21 +33,41 @@ const Auth: React.FC = () => {
       timer = setTimeout(() => {
         setCountdown(countdown - 1);
         if (countdown === 1) {
-          setError(null); // Clear the error when countdown reaches 0
+          setError(null);
         }
       }, 1000);
     }
     return () => clearTimeout(timer);
   }, [countdown]);
 
+  const validateForm = () => {
+    if (!email || !password) {
+      setError("Please fill in all fields.");
+      return false;
+    }
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      setError("Please enter a valid email address.");
+      return false;
+    }
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long.");
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateForm()) return;
+
+    setLoading(true);
 
     const now = Date.now();
     if (now - lastAttempt < 20000) {
       const remainingTime = Math.ceil((20000 - (now - lastAttempt)) / 1000);
       setCountdown(remainingTime);
       setError(`Please wait before trying again.`);
+      setLoading(false);
       return;
     }
     setLastAttempt(now);
@@ -49,7 +83,7 @@ const Auth: React.FC = () => {
             setError(
               "Too many signup attempts. Please try again after some time."
             );
-            setCountdown(20); // Set a 60-second countdown for rate limit
+            setCountdown(20);
           } else {
             throw error;
           }
@@ -61,75 +95,168 @@ const Auth: React.FC = () => {
       } else {
         const { error } = await signIn(email, password);
         if (error) throw error;
-        router.push("/");
+        router.push("/dashboard");
       }
     } catch (error) {
       setError(getErrorMessage(error));
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-md w-full mx-auto mt-8 p-6 bg-white rounded-lg shadow-xl">
-      <h2 className="text-2xl font-bold mb-6">
-        {isSignUp ? "Sign Up" : "Sign In"}
-      </h2>
-      <form onSubmit={handleSubmit}>
-        {/* Email input */}
-        <div className="mb-4">
-          <label htmlFor="email" className="block text-gray-700 font-bold mb-2">
-            Email
-          </label>
-          <input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-            required
+    <Container component="main" maxWidth="xs">
+      <Paper
+        elevation={6}
+        sx={{
+          mt: 8,
+          p: 4,
+          bgcolor: "background.paper",
+          borderRadius: 2,
+          boxShadow: 3,
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <LockOutlinedIcon
+            sx={{
+              fontSize: 40,
+              mb: 2,
+              color: "primary.main",
+              bgcolor: "background.paper",
+              p: 1,
+              borderRadius: "50%",
+            }}
           />
-        </div>
-        {/* Password input */}
-        <div className="mb-6">
-          <label
-            htmlFor="password"
-            className="block text-gray-700 font-bold mb-2"
+          <Typography
+            component="h1"
+            variant="h5"
+            sx={{ color: "primary.main", mb: 3 }}
           >
-            Password
-          </label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-            required
-          />
-        </div>
-        {error && (
-          <p className="text-red-500 mb-4">
-            {error}
-            {countdown > 0 && ` Please try again in ${countdown} seconds.`}
-          </p>
-        )}
-        {message && <p className="text-green-500 mb-4">{message}</p>}
-        <button
-          type="submit"
-          className="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none focus:shadow-outline disabled:bg-gray-400 disabled:cursor-not-allowed"
-          disabled={countdown > 0}
-        >
-          {isSignUp ? "Sign Up" : "Sign In"}
-        </button>
-      </form>
-      <p className="mt-4 text-center">
-        {isSignUp ? "Already have an account?" : "Don't have an account?"}
-        <button
-          onClick={() => setIsSignUp(!isSignUp)}
-          className="ml-1 text-blue-500 hover:text-blue-600 focus:outline-none"
-        >
-          {isSignUp ? "Sign In" : "Sign Up"}
-        </button>
-      </p>
-    </div>
+            {isSignUp ? "Sign Up" : "Sign In"}
+          </Typography>
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            sx={{ width: "100%", mt: 1 }}
+          >
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              id="email"
+              label="Email Address"
+              name="email"
+              autoComplete="email"
+              autoFocus
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  "& fieldset": {
+                    borderColor: "rgba(255, 255, 255, 0.23)",
+                  },
+                  "&:hover fieldset": {
+                    borderColor: "rgba(255, 255, 255, 0.5)",
+                  },
+                },
+                "& .MuiInputLabel-root": {
+                  color: "rgba(255, 255, 255, 0.7)",
+                },
+              }}
+            />
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              name="password"
+              label="Password"
+              type="password"
+              id="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  "& fieldset": {
+                    borderColor: "rgba(255, 255, 255, 0.23)",
+                  },
+                  "&:hover fieldset": {
+                    borderColor: "rgba(255, 255, 255, 0.5)",
+                  },
+                },
+                "& .MuiInputLabel-root": {
+                  color: "rgba(255, 255, 255, 0.7)",
+                },
+              }}
+            />
+            {error && (
+              <Alert severity="error" sx={{ mt: 2 }}>
+                {error}
+              </Alert>
+            )}
+            {message && (
+              <Alert severity="success" sx={{ mt: 2 }}>
+                {message}
+              </Alert>
+            )}
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{
+                mt: 3,
+                mb: 2,
+                bgcolor: "primary.main",
+                color: "background.paper",
+                "&:hover": {
+                  bgcolor: "primary.dark",
+                },
+              }}
+              disabled={loading || countdown > 0}
+            >
+              {loading ? (
+                <CircularProgress size={24} />
+              ) : isSignUp ? (
+                "Sign Up"
+              ) : (
+                "Sign In"
+              )}
+            </Button>
+            {countdown > 0 && (
+              <Typography
+                variant="body2"
+                sx={{ color: "secondary.main", textAlign: "center" }}
+              >
+                Please try again in {countdown} seconds.
+              </Typography>
+            )}
+            <Box sx={{ mt: 2, textAlign: "center" }}>
+              <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                {isSignUp
+                  ? "Already have an account?"
+                  : "Don't have an account?"}
+                <Button
+                  onClick={() => setIsSignUp(!isSignUp)}
+                  sx={{
+                    ml: 1,
+                    color: "primary.main",
+                    textTransform: "none",
+                  }}
+                >
+                  {isSignUp ? "Sign In" : "Sign Up"}
+                </Button>
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
+      </Paper>
+    </Container>
   );
 };
 

@@ -2,6 +2,34 @@ import React, { useState, useEffect } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import { Room, RoomManagerProps, getErrorMessage } from "@/types";
+import {
+  TextField,
+  Button,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemSecondaryAction,
+  Typography,
+  Paper,
+  Box,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  IconButton,
+  Divider,
+  Snackbar,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+} from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import JoinFullIcon from "@mui/icons-material/JoinFull";
+import ExitToAppIcon from "@mui/icons-material/ExitToApp";
+import RefreshIcon from "@mui/icons-material/Refresh";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const RoomManager: React.FC<RoomManagerProps> = ({
   currentRoom,
@@ -13,6 +41,9 @@ const RoomManager: React.FC<RoomManagerProps> = ({
   const [newRoomLanguage, setNewRoomLanguage] = useState("javascript");
   const [joinRoomId, setJoinRoomId] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [roomToDelete, setRoomToDelete] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -79,6 +110,7 @@ const RoomManager: React.FC<RoomManagerProps> = ({
         setCurrentRoom(data.id);
         setCurrentLanguage(data.language);
         setError(null);
+        setSuccessMessage(`Room "${data.name}" created successfully!`);
         router.push(`/room/${data.id}`);
       } else {
         console.error("Room created but no data returned");
@@ -110,6 +142,7 @@ const RoomManager: React.FC<RoomManagerProps> = ({
       setCurrentLanguage(data.language);
       setJoinRoomId("");
       setError(null);
+      setSuccessMessage(`Joined room "${data.name}" successfully!`);
       router.push(`/room/${data.id}`);
     } else {
       console.error("Room not found");
@@ -122,88 +155,253 @@ const RoomManager: React.FC<RoomManagerProps> = ({
     router.push("/");
   }
 
+  async function deleteRoom(roomId: string) {
+    try {
+      const { error } = await supabase.from("rooms").delete().eq("id", roomId);
+
+      if (error) {
+        console.error("Error deleting room:", error);
+        setError(`Failed to delete room: ${error.message}`);
+      } else {
+        setSuccessMessage("Room deleted successfully!");
+        fetchRooms();
+      }
+    } catch (err) {
+      console.error("Unexpected error:", getErrorMessage(err));
+      setError(`An unexpected error occurred: ${getErrorMessage(err)}`);
+    }
+    setDeleteDialogOpen(false);
+    setRoomToDelete(null);
+  }
+
   return (
-    <div className="room-manager p-6 bg-white rounded-lg shadow-md space-y-6">
-      {error && <p className="text-red-500 mb-4">{error}</p>}
+    <Paper elevation={3} sx={{ p: 3, bgcolor: "#1E1E1E" }}>
+      <Typography variant="h5" gutterBottom sx={{ color: "#90CAF9" }}>
+        Room Manager
+      </Typography>
+      <Snackbar
+        open={!!error || !!successMessage}
+        autoHideDuration={6000}
+        onClose={() => {
+          setError(null);
+          setSuccessMessage(null);
+        }}
+      >
+        <Alert
+          onClose={() => {
+            setError(null);
+            setSuccessMessage(null);
+          }}
+          severity={error ? "error" : "success"}
+          sx={{ width: "100%" }}
+        >
+          {error || successMessage}
+        </Alert>
+      </Snackbar>
       {!currentRoom ? (
-        <>
-          <div className="create-room space-y-4">
-            <h3 className="text-lg font-semibold">Create a New Room</h3>
-            <div className="grid grid-cols-1 gap-4">
-              <input
-                type="text"
-                value={newRoomName}
-                onChange={(e) => setNewRoomName(e.target.value)}
-                placeholder="New Room Name"
-                className="p-2 border rounded w-full"
-              />
-              <select
+        <Box>
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h6" gutterBottom sx={{ color: "#E0E0E0" }}>
+              Create a New Room
+            </Typography>
+            <TextField
+              fullWidth
+              variant="outlined"
+              value={newRoomName}
+              onChange={(e) => setNewRoomName(e.target.value)}
+              placeholder="New Room Name"
+              margin="normal"
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  "& fieldset": {
+                    borderColor: "#424242",
+                  },
+                  "&:hover fieldset": {
+                    borderColor: "#616161",
+                  },
+                },
+                "& .MuiInputBase-input": {
+                  color: "#E0E0E0",
+                },
+              }}
+            />
+            <FormControl fullWidth margin="normal">
+              <InputLabel id="language-select-label" sx={{ color: "#E0E0E0" }}>
+                Language
+              </InputLabel>
+              <Select
+                labelId="language-select-label"
                 value={newRoomLanguage}
-                onChange={(e) => setNewRoomLanguage(e.target.value)}
-                className="p-2 border rounded w-full"
+                onChange={(e) => setNewRoomLanguage(e.target.value as string)}
+                label="Language"
+                sx={{
+                  color: "#E0E0E0",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#424242",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#616161",
+                  },
+                }}
               >
-                <option value="javascript">JavaScript</option>
-                <option value="python">Python</option>
-                <option value="java">Java</option>
-                <option value="go">Go</option>
-              </select>
-              <button
-                onClick={createRoom}
-                className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition-colors w-full"
-              >
-                Create Room
-              </button>
-            </div>
-          </div>
-          <div className="join-room space-y-4">
-            <h3 className="text-lg font-semibold">Join a Room</h3>
-            <div className="grid grid-cols-1 gap-4">
-              <input
-                type="text"
-                value={joinRoomId}
-                onChange={(e) => setJoinRoomId(e.target.value)}
-                placeholder="6-character Room ID to Join"
-                className="p-2 border rounded w-full"
-              />
-              <button
-                onClick={() => joinRoom(joinRoomId)}
-                className="bg-green-500 text-white p-2 rounded hover:bg-green-600 transition-colors w-full"
-              >
-                Join Room
-              </button>
-            </div>
-          </div>
-          <div className="room-list space-y-4">
-            <h3 className="text-lg font-semibold">Available Rooms:</h3>
-            <ul className="space-y-2">
+                <MenuItem value="javascript">JavaScript</MenuItem>
+                <MenuItem value="python">Python</MenuItem>
+                <MenuItem value="java">Java</MenuItem>
+                <MenuItem value="go">Go</MenuItem>
+              </Select>
+            </FormControl>
+            <Button
+              fullWidth
+              variant="contained"
+              onClick={createRoom}
+              startIcon={<AddIcon />}
+              sx={{
+                mt: 2,
+                bgcolor: "#424242",
+                color: "#E0E0E0",
+                "&:hover": { bgcolor: "#616161", color: "#E0E0E0" },
+              }}
+            >
+              Create Room
+            </Button>
+          </Box>
+          <Divider sx={{ my: 3, bgcolor: "#424242" }} />
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h6" gutterBottom sx={{ color: "#E0E0E0" }}>
+              Join a Room
+            </Typography>
+            <TextField
+              fullWidth
+              variant="outlined"
+              value={joinRoomId}
+              onChange={(e) => setJoinRoomId(e.target.value)}
+              placeholder="6-character Room ID to Join"
+              margin="normal"
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  "& fieldset": {
+                    borderColor: "#424242",
+                  },
+                  "&:hover fieldset": {
+                    borderColor: "#616161",
+                  },
+                },
+                "& .MuiInputBase-input": {
+                  color: "#E0E0E0",
+                },
+              }}
+            />
+            <Button
+              fullWidth
+              variant="contained"
+              onClick={() => joinRoom(joinRoomId)}
+              startIcon={<JoinFullIcon />}
+              sx={{
+                mt: 2,
+                bgcolor: "#424242",
+                color: "#E0E0E0",
+                "&:hover": { bgcolor: "#616161", color: "#E0E0E0" },
+              }}
+            >
+              Join Room
+            </Button>
+          </Box>
+          <Divider sx={{ my: 3, bgcolor: "#424242" }} />
+          <Box>
+            <Typography variant="h6" gutterBottom sx={{ color: "#E0E0E0" }}>
+              Available Rooms
+            </Typography>
+            <List>
               {rooms.map((room) => (
-                <li key={room.id} className="flex justify-between items-center">
-                  <span>
-                    {room.name} (ID: {room.id}, Language: {room.language})
-                  </span>
-                  <button
-                    onClick={() => joinRoom(room.id)}
-                    className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition-colors"
-                  >
-                    Join
-                  </button>
-                </li>
+                <ListItem
+                  key={room.id}
+                  divider
+                  sx={{ borderBottomColor: "#424242" }}
+                >
+                  <ListItemText
+                    primary={room.name}
+                    secondary={`ID: ${room.id}, Language: ${room.language}`}
+                    primaryTypographyProps={{ color: "#E0E0E0" }}
+                    secondaryTypographyProps={{ color: "#BDBDBD" }}
+                  />
+                  <ListItemSecondaryAction>
+                    <Button
+                      variant="outlined"
+                      onClick={() => joinRoom(room.id)}
+                      size="small"
+                      sx={{ color: "#90CAF9", borderColor: "#90CAF9", mr: 1 }}
+                    >
+                      Join
+                    </Button>
+                    <IconButton
+                      edge="end"
+                      aria-label="delete"
+                      onClick={() => {
+                        setRoomToDelete(room.id);
+                        setDeleteDialogOpen(true);
+                      }}
+                      sx={{ color: "#F44336" }}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </ListItemSecondaryAction>
+                </ListItem>
               ))}
-            </ul>
-          </div>
-        </>
+            </List>
+            <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
+              <IconButton onClick={fetchRooms} sx={{ color: "#90CAF9" }}>
+                <RefreshIcon />
+              </IconButton>
+            </Box>
+          </Box>
+        </Box>
       ) : (
-        <div className="current-room space-y-4">
-          <p className="font-semibold">Current Room: {currentRoom}</p>
-          <button
+        <Box>
+          <Typography variant="body1" gutterBottom sx={{ color: "#E0E0E0" }}>
+            Current Room: {currentRoom}
+          </Typography>
+          <Button
+            fullWidth
+            variant="contained"
             onClick={leaveRoom}
-            className="bg-red-500 text-white p-2 rounded hover:bg-red-600 transition-colors w-full"
+            startIcon={<ExitToAppIcon />}
+            sx={{
+              mt: 2,
+              bgcolor: "#D32F2F",
+              "&:hover": { bgcolor: "#C62828" },
+            }}
           >
             Leave Room
-          </button>
-        </div>
+          </Button>
+        </Box>
       )}
-    </div>
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">{"Delete Room?"}</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete this room? This action cannot be
+            undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)} color="primary">
+            Cancel
+          </Button>
+          <Button
+            onClick={() => roomToDelete && deleteRoom(roomToDelete)}
+            color="error"
+            autoFocus
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Paper>
   );
 };
 

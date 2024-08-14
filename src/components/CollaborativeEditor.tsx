@@ -1,35 +1,41 @@
-// components/CollaborativeEditor.tsx
-
 import React, { useEffect, useRef, useState } from "react";
 import * as Y from "yjs";
 import { WebsocketProvider } from "y-websocket";
 import { MonacoBinding } from "y-monaco";
 import dynamic from "next/dynamic";
-
-const Editor = dynamic(() => import("@monaco-editor/react"), { ssr: false });
+import {
+  Paper,
+  Typography,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Box,
+  Chip,
+  Tooltip,
+  IconButton,
+  Drawer,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+} from "@mui/material";
+import {
+  PersonOutline,
+  Settings,
+  Brightness4,
+  Brightness7,
+} from "@mui/icons-material";
 import CodeExecutionEnvironment from "./CodeExecutionEnvironment";
 import VersionControl from "./VersionControl";
 import { supabase } from "@/lib/supabaseClient";
+
+const Editor = dynamic(() => import("@monaco-editor/react"), { ssr: false });
 
 interface CollaborativeEditorProps {
   roomId: string;
   initialLanguage: string;
 }
-
-const getStarterCode = (lang: string) => {
-  switch (lang) {
-    case "javascript":
-      return "// JavaScript starter code\nconsole.log('Hello, World!');";
-    case "python":
-      return "# Python starter code\nprint('Hello, World!')";
-    case "java":
-      return 'public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello, World!");\n    }\n}';
-    case "go":
-      return 'package main\n\nimport "fmt"\n\nfunc main() {\n    fmt.Println("Hello, World!")\n}';
-    default:
-      return "// Start coding here...";
-  }
-};
 
 function CollaborativeEditor({
   roomId,
@@ -41,6 +47,9 @@ function CollaborativeEditor({
   const ydocRef = useRef<Y.Doc | null>(null);
   const providerRef = useRef<WebsocketProvider | null>(null);
   const bindingRef = useRef<MonacoBinding | null>(null);
+  const [users, setUsers] = useState<string[]>([]);
+  const [theme, setTheme] = useState<"vs-dark" | "light">("vs-dark");
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   useEffect(() => {
     const setupCollaboration = async () => {
@@ -66,6 +75,13 @@ function CollaborativeEditor({
         console.log("WebSocket connection status:", event.status);
       });
 
+      provider.awareness.on("change", () => {
+        const clients = Array.from(provider.awareness.getStates().values());
+        setUsers(
+          clients.map((client: any) => client.user?.name || "Anonymous")
+        );
+      });
+
       const ytext = ydoc.getText("monaco");
 
       const binding = new MonacoBinding(
@@ -76,24 +92,20 @@ function CollaborativeEditor({
       );
       bindingRef.current = binding;
 
-      // Fetch initial content from Supabase only if the document is empty
-      if (ytext.length === 0) {
-        const { data, error } = await supabase
-          .from("code_versions")
-          .select("snapshot")
-          .eq("room_id", roomId)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .single();
+      // Fetch initial content from Supabase
+      const { data, error } = await supabase
+        .from("code_versions")
+        .select("snapshot")
+        .eq("room_id", roomId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
 
-        if (error) {
-          console.error("Error fetching latest code:", error);
-          ytext.insert(0, getStarterCode(language));
-        } else if (data) {
-          ytext.insert(0, data.snapshot);
-        } else {
-          ytext.insert(0, getStarterCode(language));
-        }
+      if (error) {
+        console.error("Error fetching latest code:", error);
+      } else if (data && data.snapshot) {
+        ytext.delete(0, ytext.length);
+        ytext.insert(0, data.snapshot);
       }
 
       // Update local state when the shared document changes
@@ -125,24 +137,51 @@ function CollaborativeEditor({
     }
   };
 
+  const toggleTheme = () => {
+    setTheme(theme === "vs-dark" ? "light" : "vs-dark");
+  };
+
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <select
+    <Paper elevation={3} sx={{ p: 3 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 2,
+        }}
+      >
+        <Typography variant="h5">Collaborative Editor</Typography>
+        <Box>
+          {users.map((user, index) => (
+            <Tooltip key={index} title={user}>
+              <Chip
+                icon={<PersonOutline />}
+                label={user.charAt(0).toUpperCase()}
+                sx={{ mr: 1 }}
+              />
+            </Tooltip>
+          ))}
+        </Box>
+      </Box>
+      <FormControl fullWidth margin="normal">
+        <InputLabel id="language-select-label">Language</InputLabel>
+        <Select
+          labelId="language-select-label"
           value={language}
-          onChange={(e) => setLanguage(e.target.value)}
-          className="p-2 border rounded"
+          onChange={(e) => setLanguage(e.target.value as string)}
+          label="Language"
         >
-          <option value="javascript">JavaScript</option>
-          <option value="python">Python</option>
-          <option value="java">Java</option>
-          <option value="go">Go</option>
-        </select>
-      </div>
+          <MenuItem value="javascript">JavaScript</MenuItem>
+          <MenuItem value="python">Python</MenuItem>
+          <MenuItem value="java">Java</MenuItem>
+          <MenuItem value="go">Go</MenuItem>
+        </Select>
+      </FormControl>
       <Editor
         height="50vh"
         language={language}
-        theme="vs-dark"
+        theme={theme}
         options={{
           minimap: { enabled: false },
           fontSize: 16,
@@ -162,7 +201,7 @@ function CollaborativeEditor({
         onRevert={handleRevert}
       />
       <CodeExecutionEnvironment code={code} language={language} />
-    </div>
+    </Paper>
   );
 }
 

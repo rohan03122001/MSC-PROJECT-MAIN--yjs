@@ -5,8 +5,18 @@ import {
   ExecutionResult,
   getErrorMessage,
 } from "@/types";
+import {
+  Button,
+  Typography,
+  Paper,
+  Box,
+  CircularProgress,
+  Collapse,
+} from "@mui/material";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 
-// Map of supported languages to their Judge0 language IDs
 const languageIds: { [key: string]: number } = {
   javascript: 63,
   python: 71,
@@ -21,12 +31,12 @@ const CodeExecutionEnvironment: React.FC<CodeExecutionEnvironmentProps> = ({
   const [result, setResult] = useState<ExecutionResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState(false);
 
   const executeCode = async () => {
     setLoading(true);
     setError(null);
     try {
-      // Submit code execution request
       const response = await axios.post(
         "https://judge0-ce.p.rapidapi.com/submissions",
         {
@@ -45,7 +55,6 @@ const CodeExecutionEnvironment: React.FC<CodeExecutionEnvironmentProps> = ({
 
       const token = response.data.token;
 
-      // Poll for execution results
       let executionResult;
       do {
         const statusResponse = await axios.get(
@@ -61,6 +70,7 @@ const CodeExecutionEnvironment: React.FC<CodeExecutionEnvironmentProps> = ({
       } while (executionResult.status.id <= 2);
 
       setResult(executionResult);
+      setExpanded(true);
     } catch (err) {
       setError("An error occurred while executing the code.");
       console.error(getErrorMessage(err));
@@ -70,31 +80,67 @@ const CodeExecutionEnvironment: React.FC<CodeExecutionEnvironmentProps> = ({
   };
 
   return (
-    <div className="mt-6 p-6 bg-white rounded-lg shadow-md space-y-4">
-      <h3 className="text-xl font-semibold">Code Execution</h3>
-      <button
-        onClick={executeCode}
-        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors w-full"
-        disabled={loading}
+    <Paper elevation={3} sx={{ p: 3, mt: 3 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
       >
-        {loading ? "Executing..." : "Execute Code"}
-      </button>
-      {error && <p className="text-red-500">{error}</p>}
-      {result && (
-        <div className="space-y-2">
-          <h4 className="font-semibold">Output:</h4>
-          <pre className="bg-gray-100 p-4 rounded whitespace-pre-wrap">
-            {result.stdout ||
-              result.stderr ||
-              result.compile_output ||
-              result.message}
-          </pre>
-          <p>
-            Execution time: {result.time} | Memory used: {result.memory}
-          </p>
-        </div>
+        <Typography variant="h6" gutterBottom>
+          Code Execution
+        </Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={
+            loading ? <CircularProgress size={20} /> : <PlayArrowIcon />
+          }
+          onClick={executeCode}
+          disabled={loading}
+        >
+          {loading ? "Executing..." : "Execute Code"}
+        </Button>
+      </Box>
+      {error && (
+        <Typography color="error" sx={{ mt: 2 }}>
+          {error}
+        </Typography>
       )}
-    </div>
+      {result && (
+        <Box sx={{ mt: 2 }}>
+          <Button
+            onClick={() => setExpanded(!expanded)}
+            startIcon={expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+          >
+            {expanded ? "Hide Output" : "Show Output"}
+          </Button>
+          <Collapse in={expanded}>
+            <Paper variant="outlined" sx={{ p: 2, mt: 2, bgcolor: "grey.900" }}>
+              <Typography variant="subtitle1" gutterBottom>
+                Output:
+              </Typography>
+              <pre
+                style={{
+                  whiteSpace: "pre-wrap",
+                  wordBreak: "break-word",
+                  color: "white",
+                }}
+              >
+                {result.stdout ||
+                  result.stderr ||
+                  result.compile_output ||
+                  result.message}
+              </pre>
+              <Typography variant="body2" sx={{ mt: 1, color: "grey.400" }}>
+                Execution time: {result.time} | Memory used: {result.memory}
+              </Typography>
+            </Paper>
+          </Collapse>
+        </Box>
+      )}
+    </Paper>
   );
 };
 

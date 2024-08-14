@@ -1,9 +1,10 @@
-import { Client, LocalStream, RemoteStream } from "ion-sdk-js";
+import { Client, LocalStream } from "ion-sdk-js";
 import { IonSFUJSONRPCSignal } from "ion-sdk-js/lib/signal/json-rpc-impl";
 
 class IonSfuClient {
   reconnectAttempts = 0;
   maxReconnectAttempts = 5;
+  keepaliveInterval = null;
 
   constructor(url) {
     console.log(`IonSfuClient: Constructor called with URL: ${url}`);
@@ -20,6 +21,7 @@ class IonSfuClient {
       console.log(
         `IonSfuClient: WebSocket readyState: ${this.signal.socket.readyState}`
       );
+      this.reconnectAttempts = 0; // Reset reconnect attempts on successful connection
     };
 
     this.signal.onclose = (event) => {
@@ -35,11 +37,15 @@ class IonSfuClient {
         console.log(
           `IonSfuClient: Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})`
         );
-        setTimeout(() => this.initializeConnection(url), 10000);
+        setTimeout(
+          () => this.initializeConnection(url),
+          5000 * Math.pow(2, this.reconnectAttempts - 1)
+        ); // Exponential backoff
       } else if (this.reconnectAttempts >= this.maxReconnectAttempts) {
         console.log(
           `IonSfuClient: Max reconnection attempts reached. Giving up.`
         );
+        this.onConnectionLost && this.onConnectionLost();
       }
     };
 
@@ -75,6 +81,7 @@ class IonSfuClient {
           console.log(
             `IonSfuClient: Successfully joined session ${sessionId} with UID ${uid}`
           );
+          this.startKeepalive();
           resolve();
         } catch (error) {
           console.error(
@@ -158,6 +165,7 @@ class IonSfuClient {
 
   close() {
     console.log("IonSfuClient: Closing client and signal connections");
+    this.stopKeepalive();
     try {
       this.client.close();
       this.signal.close();
@@ -166,6 +174,26 @@ class IonSfuClient {
       );
     } catch (error) {
       console.error("IonSfuClient: Error closing connections:", error);
+    }
+  }
+
+  setOnConnectionLost(callback) {
+    this.onConnectionLost = callback;
+  }
+
+  startKeepalive() {
+    this.keepaliveInterval = setInterval(() => {
+      if (this.signal && this.signal.socket.readyState === WebSocket.OPEN) {
+        this.signal.socket.send(JSON.stringify({ method: "keepalive" }));
+        console.log("IonSfuClient: Sent keepalive");
+      }
+    }, 30000); // Send keepalive every 30 seconds
+  }
+
+  stopKeepalive() {
+    if (this.keepaliveInterval) {
+      clearInterval(this.keepaliveInterval);
+      console.log("IonSfuClient: Stopped keepalive");
     }
   }
 }

@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import RoomManager from "@/components/RoomManager";
 import { useAuth } from "@/lib/AuthContext";
 import Link from "next/link";
+import { Button, Container, Grid, Paper, Typography } from "@mui/material";
 
 const CollaborativeEditor = dynamic(
   () => import("@/components/CollaborativeEditor"),
@@ -29,58 +30,63 @@ export default function RoomPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        Loading...
-      </div>
+      <Container
+        sx={{
+          height: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Typography variant="h5">Loading...</Typography>
+      </Container>
     );
   }
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-white mb-6">
+      <Container
+        sx={{
+          height: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Paper elevation={3} sx={{ p: 4, textAlign: "center" }}>
+          <Typography variant="h4" gutterBottom>
             Welcome to DisCoder
-          </h1>
-          <Link
-            href="/auth"
-            className="bg-white text-indigo-600 font-semibold py-2 px-4 rounded-lg hover:bg-indigo-100 transition duration-300"
-          >
-            Sign In or Sign Up
+          </Typography>
+          <Link href="/auth" passHref>
+            <Button variant="contained" color="primary">
+              Sign In or Sign Up
+            </Button>
           </Link>
-        </div>
-      </div>
+        </Paper>
+      </Container>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-500 to-purple-600 p-6">
-      <div className="container mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            {currentRoom && (
-              <div className="bg-white rounded-lg shadow-xl overflow-hidden">
-                <CollaborativeEditor
-                  roomId={currentRoom}
-                  initialLanguage={currentLanguage}
-                />
-              </div>
-            )}
-          </div>
-          <div className="space-y-6">
-            <RoomManager
-              currentRoom={currentRoom}
-              setCurrentRoom={setCurrentRoom}
-              setCurrentLanguage={setCurrentLanguage}
+    <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
+      <Grid container spacing={3}>
+        <Grid item xs={12} lg={8}>
+          {currentRoom && (
+            <CollaborativeEditor
+              roomId={currentRoom}
+              initialLanguage={currentLanguage}
             />
-            {currentRoom && (
-              <>
-                <VoiceChat roomId={currentRoom} />
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
+          )}
+        </Grid>
+        <Grid item xs={12} lg={4}>
+          <RoomManager
+            currentRoom={currentRoom}
+            setCurrentRoom={setCurrentRoom}
+            setCurrentLanguage={setCurrentLanguage}
+          />
+          {currentRoom && <VoiceChat roomId={currentRoom} />}
+        </Grid>
+      </Grid>
+    </Container>
   );
 }

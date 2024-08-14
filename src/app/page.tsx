@@ -1,50 +1,77 @@
 "use client";
 
-import { useState } from "react";
-import RoomManager from "@/components/RoomManager";
+import { useEffect } from "react";
+import { Box, Typography, Button, Container } from "@mui/material";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/AuthContext";
-import Link from "next/link";
 
 export default function Home() {
-  const [currentRoom, setCurrentRoom] = useState<string | null>(null);
-  const [currentLanguage, setCurrentLanguage] = useState<string>("javascript");
   const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.push("/dashboard");
+    }
+  }, [user, loading, router]);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        Loading...
-      </div>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <Typography variant="h6">Loading...</Typography>
+      </Box>
     );
   }
 
-  if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-white mb-6">
-            Welcome to DisCoder
-          </h1>
-          <Link
-            href="/auth"
-            className="bg-white text-indigo-600 font-semibold py-2 px-4 rounded-lg hover:bg-indigo-100 transition duration-300"
-          >
-            Sign In or Sign Up
-          </Link>
-        </div>
-      </div>
-    );
+  if (user) {
+    return null; // This will prevent a flash of content before redirecting
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-500 to-purple-600 p-6">
-      <div className="container mx-auto">
-        <RoomManager
-          currentRoom={currentRoom}
-          setCurrentRoom={setCurrentRoom}
-          setCurrentLanguage={setCurrentLanguage}
-        />
-      </div>
-    </div>
+    <Box
+      sx={{
+        bgcolor: "background.default",
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <Container maxWidth="sm">
+        <Typography
+          variant="h2"
+          component="h1"
+          align="center"
+          gutterBottom
+          sx={{ color: "primary.main" }}
+        >
+          Welcome to DisCoder
+        </Typography>
+        <Box sx={{ textAlign: "center", mt: 4 }}>
+          <Button
+            variant="outlined"
+            size="large"
+            onClick={() => router.push("/auth")}
+            sx={{
+              color: "primary.main",
+              borderColor: "primary.main",
+              "&:hover": {
+                backgroundColor: "rgba(255, 255, 255, 0.08)",
+              },
+            }}
+          >
+            Sign In or Sign Up
+          </Button>
+        </Box>
+      </Container>
+    </Box>
   );
 }
