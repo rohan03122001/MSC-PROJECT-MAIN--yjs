@@ -19,6 +19,7 @@ import MicIcon from "@mui/icons-material/Mic";
 import MicOffIcon from "@mui/icons-material/MicOff";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import VolumeOffIcon from "@mui/icons-material/VolumeOff";
+import VoiceChatIcon from "@mui/icons-material/VoiceChat";
 
 const VoiceChat = ({ roomId }) => {
   const [client, setClient] = useState(null);
@@ -216,11 +217,16 @@ const VoiceChat = ({ roomId }) => {
   };
 
   return (
-    <Paper elevation={3} sx={{ p: 3 }}>
-      <Typography variant="h5" gutterBottom>
+    <Paper elevation={3} sx={{ p: 3, bgcolor: "background.paper", mt: 3 }}>
+      <Typography
+        variant="h5"
+        gutterBottom
+        sx={{ display: "flex", alignItems: "center", color: "primary.main" }}
+      >
+        <VoiceChatIcon sx={{ mr: 1 }} />
         Voice Chat
       </Typography>
-      <Typography variant="body1" gutterBottom>
+      <Typography variant="body1" gutterBottom color="text.secondary">
         Status: {connectionStatus}
       </Typography>
       {connectionError && (
@@ -230,7 +236,7 @@ const VoiceChat = ({ roomId }) => {
       )}
       {isConnected ? (
         <Box>
-          <Typography variant="body1" gutterBottom>
+          <Typography variant="body2" gutterBottom color="text.secondary">
             Connected to room: {roomId}
           </Typography>
           <Button
@@ -243,7 +249,11 @@ const VoiceChat = ({ roomId }) => {
           >
             {localStream ? "Stop Audio" : "Start Audio"}
           </Button>
-          <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
+          <Typography
+            variant="h6"
+            gutterBottom
+            sx={{ mt: 2, color: "text.primary" }}
+          >
             Remote Users:
           </Typography>
           <List>
@@ -251,7 +261,10 @@ const VoiceChat = ({ roomId }) => {
               .filter((stream) => !isLocalStream(stream.id))
               .map((stream) => (
                 <ListItem key={stream.id}>
-                  <ListItemText primary={`User ${stream.id.slice(0, 6)}...`} />
+                  <ListItemText
+                    primary={`User ${stream.id.slice(0, 6)}...`}
+                    primaryTypographyProps={{ color: "text.primary" }}
+                  />
                   <ListItemSecondaryAction>
                     <Tooltip
                       title={
@@ -262,6 +275,7 @@ const VoiceChat = ({ roomId }) => {
                         edge="end"
                         aria-label="toggle mute"
                         onClick={() => toggleMute(stream)}
+                        color="primary"
                       >
                         {audioRefs.current[stream.id]?.muted ? (
                           <VolumeOffIcon />

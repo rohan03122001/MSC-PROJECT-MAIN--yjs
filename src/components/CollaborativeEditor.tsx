@@ -14,18 +14,9 @@ import {
   Chip,
   Tooltip,
   IconButton,
-  Drawer,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
+  useTheme,
 } from "@mui/material";
-import {
-  PersonOutline,
-  Settings,
-  Brightness4,
-  Brightness7,
-} from "@mui/icons-material";
+import { PersonOutline, Code as CodeIcon } from "@mui/icons-material";
 import CodeExecutionEnvironment from "./CodeExecutionEnvironment";
 import VersionControl from "./VersionControl";
 import { supabase } from "@/lib/supabaseClient";
@@ -48,8 +39,7 @@ function CollaborativeEditor({
   const providerRef = useRef<WebsocketProvider | null>(null);
   const bindingRef = useRef<MonacoBinding | null>(null);
   const [users, setUsers] = useState<string[]>([]);
-  const [theme, setTheme] = useState<"vs-dark" | "light">("vs-dark");
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const theme = useTheme();
 
   useEffect(() => {
     const setupCollaboration = async () => {
@@ -137,12 +127,8 @@ function CollaborativeEditor({
     }
   };
 
-  const toggleTheme = () => {
-    setTheme(theme === "vs-dark" ? "light" : "vs-dark");
-  };
-
   return (
-    <Paper elevation={3} sx={{ p: 3 }}>
+    <Paper elevation={3} sx={{ p: 3, bgcolor: "background.paper" }}>
       <Box
         sx={{
           display: "flex",
@@ -151,14 +137,24 @@ function CollaborativeEditor({
           mb: 2,
         }}
       >
-        <Typography variant="h5">Collaborative Editor</Typography>
+        <Typography
+          variant="h5"
+          sx={{ display: "flex", alignItems: "center", color: "primary.main" }}
+        >
+          <CodeIcon sx={{ mr: 1 }} />
+          Collaborative Editor
+        </Typography>
         <Box>
           {users.map((user, index) => (
             <Tooltip key={index} title={user}>
               <Chip
                 icon={<PersonOutline />}
                 label={user.charAt(0).toUpperCase()}
-                sx={{ mr: 1 }}
+                sx={{
+                  mr: 1,
+                  bgcolor: "secondary.main",
+                  color: "background.paper",
+                }}
               />
             </Tooltip>
           ))}
@@ -178,23 +174,33 @@ function CollaborativeEditor({
           <MenuItem value="go">Go</MenuItem>
         </Select>
       </FormControl>
-      <Editor
-        height="50vh"
-        language={language}
-        theme={theme}
-        options={{
-          minimap: { enabled: false },
-          fontSize: 16,
-          lineNumbers: "on",
-          roundedSelection: false,
-          scrollBeyondLastLine: false,
-          readOnly: false,
+      <Box
+        sx={{
+          mt: 2,
+          border: 1,
+          borderColor: "divider",
+          borderRadius: 1,
+          overflow: "hidden",
         }}
-        onMount={(editor) => {
-          setEditor(editor);
-        }}
-        onChange={handleEditorChange}
-      />
+      >
+        <Editor
+          height="50vh"
+          language={language}
+          theme="vs-dark"
+          options={{
+            minimap: { enabled: false },
+            fontSize: 16,
+            lineNumbers: "on",
+            roundedSelection: false,
+            scrollBeyondLastLine: false,
+            readOnly: false,
+          }}
+          onMount={(editor) => {
+            setEditor(editor);
+          }}
+          onChange={handleEditorChange}
+        />
+      </Box>
       <VersionControl
         roomId={roomId}
         currentCode={code}

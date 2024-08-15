@@ -12,10 +12,13 @@ import {
   Box,
   CircularProgress,
   Collapse,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import CodeIcon from "@mui/icons-material/Code";
 
 const languageIds: { [key: string]: number } = {
   javascript: 63,
@@ -80,7 +83,7 @@ const CodeExecutionEnvironment: React.FC<CodeExecutionEnvironmentProps> = ({
   };
 
   return (
-    <Paper elevation={3} sx={{ p: 3, mt: 3 }}>
+    <Paper elevation={3} sx={{ p: 3, mt: 3, bgcolor: "background.paper" }}>
       <Box
         sx={{
           display: "flex",
@@ -88,14 +91,23 @@ const CodeExecutionEnvironment: React.FC<CodeExecutionEnvironmentProps> = ({
           alignItems: "center",
         }}
       >
-        <Typography variant="h6" gutterBottom>
+        <Typography
+          variant="h6"
+          gutterBottom
+          sx={{ display: "flex", alignItems: "center", color: "primary.main" }}
+        >
+          <CodeIcon sx={{ mr: 1 }} />
           Code Execution
         </Typography>
         <Button
           variant="contained"
           color="primary"
           startIcon={
-            loading ? <CircularProgress size={20} /> : <PlayArrowIcon />
+            loading ? (
+              <CircularProgress size={20} color="inherit" />
+            ) : (
+              <PlayArrowIcon />
+            )
           }
           onClick={executeCode}
           disabled={loading}
@@ -113,19 +125,25 @@ const CodeExecutionEnvironment: React.FC<CodeExecutionEnvironmentProps> = ({
           <Button
             onClick={() => setExpanded(!expanded)}
             startIcon={expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+            sx={{ color: "text.secondary" }}
           >
             {expanded ? "Hide Output" : "Show Output"}
           </Button>
           <Collapse in={expanded}>
-            <Paper variant="outlined" sx={{ p: 2, mt: 2, bgcolor: "grey.900" }}>
-              <Typography variant="subtitle1" gutterBottom>
+            <Paper
+              variant="outlined"
+              sx={{ p: 2, mt: 2, bgcolor: "background.default" }}
+            >
+              <Typography variant="subtitle1" gutterBottom color="primary">
                 Output:
               </Typography>
               <pre
                 style={{
                   whiteSpace: "pre-wrap",
                   wordBreak: "break-word",
-                  color: "white",
+                  color: "inherit",
+                  fontFamily: "'Roboto Mono', monospace",
+                  fontSize: "0.9rem",
                 }}
               >
                 {result.stdout ||
@@ -133,7 +151,10 @@ const CodeExecutionEnvironment: React.FC<CodeExecutionEnvironmentProps> = ({
                   result.compile_output ||
                   result.message}
               </pre>
-              <Typography variant="body2" sx={{ mt: 1, color: "grey.400" }}>
+              <Typography
+                variant="body2"
+                sx={{ mt: 1, color: "text.secondary" }}
+              >
                 Execution time: {result.time} | Memory used: {result.memory}
               </Typography>
             </Paper>

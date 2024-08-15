@@ -2,14 +2,36 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer utilities {
-  /* Custom gradient utility class */
-  .bg-gradient-to-br {
-    background-image: linear-gradient(
-      to bottom right,
-      var(--tw-gradient-stops)
-    );
-  }
+:root {
+  --primary-color: #61DAFB;
+  --secondary-color: #FFA726;
+  --background-color: #1E1E1E;
+  --paper-color: #252526;
+  --text-primary: #FFFFFF;
+  --text-secondary: #BDBDBD;
+}
+
+body {
+  background-color: var(--background-color);
+  color: var(--text-primary);
+}
+
+/* Custom scrollbar styles */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background-color);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--secondary-color);
 }
 
 /* Styles for remote selection in collaborative editing */
@@ -19,9 +41,9 @@
 
 .yRemoteSelectionHead {
   position: absolute;
-  border-left: #ffa500 solid 2px;
-  border-top: #ffa500 solid 2px;
-  border-bottom: #ffa500 solid 2px;
+  border-left: var(--secondary-color) solid 2px;
+  border-top: var(--secondary-color) solid 2px;
+  border-bottom: var(--secondary-color) solid 2px;
   height: 100%;
   box-sizing: border-box;
 }
@@ -29,26 +51,46 @@
 .yRemoteSelectionHead::after {
   position: absolute;
   content: " ";
-  border: 3px solid #ffa500;
+  border: 3px solid var(--secondary-color);
   border-radius: 4px;
   left: -4px;
   top: -5px;
 }
 
 @keyframes fadeInOut {
-  0%,
-  100% {
-    opacity: 0;
-  }
-  10%,
-  90% {
-    opacity: 1;
-  }
+  0%, 100% { opacity: 0; }
+  10%, 90% { opacity: 1; }
 }
 
 .animate-fade-in-out {
   animation: fadeInOut 2s ease-in-out;
 }
 
+/* Custom styles for MUI components */
+.MuiButton-root {
+  text-transform: none;
+}
 
-/* notification animation  */
+.MuiPaper-root {
+  background-color: var(--paper-color);
+}
+
+.MuiTypography-root {
+  color: var(--text-primary);
+}
+
+.MuiInputBase-root {
+  color: var(--text-primary);
+}
+
+.MuiOutlinedInput-notchedOutline {
+  border-color: var(--text-secondary);
+}
+
+.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: var(--primary-color);
+}
+
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: var(--primary-color);
+}
