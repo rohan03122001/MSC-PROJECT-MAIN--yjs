@@ -83,38 +83,23 @@ const CodeExecutionEnvironment: React.FC<CodeExecutionEnvironmentProps> = ({
   };
 
   return (
-    <Paper elevation={3} sx={{ p: 3, mt: 3, bgcolor: "background.paper" }}>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
+    <Box sx={{ mt: 2 }}>
+      <Button
+        variant="contained"
+        color="primary"
+        startIcon={
+          loading ? (
+            <CircularProgress size={20} color="inherit" />
+          ) : (
+            <PlayArrowIcon />
+          )
+        }
+        onClick={executeCode}
+        disabled={loading}
+        fullWidth
       >
-        <Typography
-          variant="h6"
-          gutterBottom
-          sx={{ display: "flex", alignItems: "center", color: "primary.main" }}
-        >
-          <CodeIcon sx={{ mr: 1 }} />
-          Code Execution
-        </Typography>
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={
-            loading ? (
-              <CircularProgress size={20} color="inherit" />
-            ) : (
-              <PlayArrowIcon />
-            )
-          }
-          onClick={executeCode}
-          disabled={loading}
-        >
-          {loading ? "Executing..." : "Execute Code"}
-        </Button>
-      </Box>
+        {loading ? "Executing..." : "Execute Code"}
+      </Button>
       {error && (
         <Typography color="error" sx={{ mt: 2 }}>
           {error}
@@ -161,7 +146,7 @@ const CodeExecutionEnvironment: React.FC<CodeExecutionEnvironmentProps> = ({
           </Collapse>
         </Box>
       )}
-    </Paper>
+    </Box>
   );
 };
 

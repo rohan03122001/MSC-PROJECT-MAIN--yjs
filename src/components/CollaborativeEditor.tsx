@@ -16,9 +16,13 @@ import {
   IconButton,
   useTheme,
 } from "@mui/material";
-import { PersonOutline, Code as CodeIcon } from "@mui/icons-material";
+import {
+  PersonOutline,
+  Code as CodeIcon,
+  History as HistoryIcon,
+} from "@mui/icons-material";
 import CodeExecutionEnvironment from "./CodeExecutionEnvironment";
-import VersionControl from "./VersionControl";
+import VersionControlModal from "./VersionControlModal";
 import { supabase } from "@/lib/supabaseClient";
 
 const Editor = dynamic(() => import("@monaco-editor/react"), { ssr: false });
@@ -40,6 +44,7 @@ function CollaborativeEditor({
   const bindingRef = useRef<MonacoBinding | null>(null);
   const [users, setUsers] = useState<string[]>([]);
   const theme = useTheme();
+  const [versionControlOpen, setVersionControlOpen] = useState(false);
 
   useEffect(() => {
     const setupCollaboration = async () => {
@@ -128,7 +133,10 @@ function CollaborativeEditor({
   };
 
   return (
-    <Paper elevation={3} sx={{ p: 3, bgcolor: "background.paper" }}>
+    <Paper
+      elevation={3}
+      sx={{ p: 3, bgcolor: "background.paper", height: "100%" }}
+    >
       <Box
         sx={{
           display: "flex",
@@ -144,39 +152,32 @@ function CollaborativeEditor({
           <CodeIcon sx={{ mr: 1 }} />
           Collaborative Editor
         </Typography>
-        <Box>
-          {users.map((user, index) => (
-            <Tooltip key={index} title={user}>
-              <Chip
-                icon={<PersonOutline />}
-                label={user.charAt(0).toUpperCase()}
-                sx={{
-                  mr: 1,
-                  bgcolor: "secondary.main",
-                  color: "background.paper",
-                }}
-              />
-            </Tooltip>
-          ))}
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          <FormControl sx={{ minWidth: 120, mr: 2 }}>
+            <InputLabel id="language-select-label">Language</InputLabel>
+            <Select
+              labelId="language-select-label"
+              value={language}
+              onChange={(e) => setLanguage(e.target.value as string)}
+              label="Language"
+            >
+              <MenuItem value="javascript">JavaScript</MenuItem>
+              <MenuItem value="python">Python</MenuItem>
+              <MenuItem value="java">Java</MenuItem>
+              <MenuItem value="go">Go</MenuItem>
+            </Select>
+          </FormControl>
+          <IconButton
+            onClick={() => setVersionControlOpen(true)}
+            color="primary"
+          >
+            <HistoryIcon />
+          </IconButton>
         </Box>
       </Box>
-      <FormControl fullWidth margin="normal">
-        <InputLabel id="language-select-label">Language</InputLabel>
-        <Select
-          labelId="language-select-label"
-          value={language}
-          onChange={(e) => setLanguage(e.target.value as string)}
-          label="Language"
-        >
-          <MenuItem value="javascript">JavaScript</MenuItem>
-          <MenuItem value="python">Python</MenuItem>
-          <MenuItem value="java">Java</MenuItem>
-          <MenuItem value="go">Go</MenuItem>
-        </Select>
-      </FormControl>
       <Box
         sx={{
-          mt: 2,
+          height: "calc(100% - 100px)",
           border: 1,
           borderColor: "divider",
           borderRadius: 1,
@@ -184,7 +185,7 @@ function CollaborativeEditor({
         }}
       >
         <Editor
-          height="50vh"
+          height="100%"
           language={language}
           theme="vs-dark"
           options={{
@@ -201,12 +202,14 @@ function CollaborativeEditor({
           onChange={handleEditorChange}
         />
       </Box>
-      <VersionControl
+      <CodeExecutionEnvironment code={code} language={language} />
+      <VersionControlModal
+        open={versionControlOpen}
+        onClose={() => setVersionControlOpen(false)}
         roomId={roomId}
         currentCode={code}
         onRevert={handleRevert}
       />
-      <CodeExecutionEnvironment code={code} language={language} />
     </Paper>
   );
 }
