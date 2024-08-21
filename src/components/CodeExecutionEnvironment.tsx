@@ -13,12 +13,10 @@ import {
   CircularProgress,
   Collapse,
   IconButton,
-  Tooltip,
 } from "@mui/material";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import CodeIcon from "@mui/icons-material/Code";
 
 const languageIds: { [key: string]: number } = {
   javascript: 63,
@@ -97,6 +95,7 @@ const CodeExecutionEnvironment: React.FC<CodeExecutionEnvironmentProps> = ({
         onClick={executeCode}
         disabled={loading}
         fullWidth
+        size="small"
       >
         {loading ? "Executing..." : "Execute Code"}
       </Button>
@@ -109,8 +108,9 @@ const CodeExecutionEnvironment: React.FC<CodeExecutionEnvironmentProps> = ({
         <Box sx={{ mt: 2 }}>
           <Button
             onClick={() => setExpanded(!expanded)}
-            startIcon={expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+            endIcon={expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
             sx={{ color: "text.secondary" }}
+            size="small"
           >
             {expanded ? "Hide Output" : "Show Output"}
           </Button>
@@ -119,7 +119,7 @@ const CodeExecutionEnvironment: React.FC<CodeExecutionEnvironmentProps> = ({
               variant="outlined"
               sx={{ p: 2, mt: 2, bgcolor: "background.default" }}
             >
-              <Typography variant="subtitle1" gutterBottom color="primary">
+              <Typography variant="subtitle2" gutterBottom color="primary">
                 Output:
               </Typography>
               <pre
@@ -128,7 +128,9 @@ const CodeExecutionEnvironment: React.FC<CodeExecutionEnvironmentProps> = ({
                   wordBreak: "break-word",
                   color: "inherit",
                   fontFamily: "'Roboto Mono', monospace",
-                  fontSize: "0.9rem",
+                  fontSize: "0.8rem",
+                  maxHeight: "200px",
+                  overflowY: "auto",
                 }}
               >
                 {result.stdout ||
@@ -137,7 +139,7 @@ const CodeExecutionEnvironment: React.FC<CodeExecutionEnvironmentProps> = ({
                   result.message}
               </pre>
               <Typography
-                variant="body2"
+                variant="caption"
                 sx={{ mt: 1, color: "text.secondary" }}
               >
                 Execution time: {result.time} | Memory used: {result.memory}

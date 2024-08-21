@@ -96,7 +96,7 @@ const VersionControlModal: React.FC<VersionControlModalProps> = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>Version Control</DialogTitle>
       <DialogContent>
         <TextField
@@ -109,6 +109,7 @@ const VersionControlModal: React.FC<VersionControlModalProps> = ({
           variant="outlined"
           value={versionName}
           onChange={(e) => setVersionName(e.target.value)}
+          size="small"
         />
         <Button
           variant="contained"
@@ -117,18 +118,21 @@ const VersionControlModal: React.FC<VersionControlModalProps> = ({
           onClick={saveVersion}
           fullWidth
           sx={{ mt: 2, mb: 2 }}
+          size="small"
         >
           Save Current Version
         </Button>
-        <Typography variant="subtitle1" gutterBottom>
+        <Typography variant="subtitle2" gutterBottom>
           Previous Versions:
         </Typography>
-        <List>
+        <List sx={{ maxHeight: 300, overflowY: "auto" }}>
           {versions.map((version) => (
             <ListItem key={version.id} divider>
               <ListItemText
                 primary={version.name || `Version ${version.id}`}
                 secondary={new Date(version.created_at).toLocaleString()}
+                primaryTypographyProps={{ variant: "body2" }}
+                secondaryTypographyProps={{ variant: "caption" }}
               />
               <ListItemSecondaryAction>
                 <Tooltip title="Revert to this version">
@@ -136,9 +140,9 @@ const VersionControlModal: React.FC<VersionControlModalProps> = ({
                     edge="end"
                     aria-label="revert"
                     onClick={() => revertToVersion(version.snapshot)}
-                    sx={{ mr: 1 }}
+                    size="small"
                   >
-                    <RestoreIcon />
+                    <RestoreIcon fontSize="small" />
                   </IconButton>
                 </Tooltip>
                 <Tooltip title="Delete this version">
@@ -146,8 +150,9 @@ const VersionControlModal: React.FC<VersionControlModalProps> = ({
                     edge="end"
                     aria-label="delete"
                     onClick={() => deleteVersion(version.id)}
+                    size="small"
                   >
-                    <DeleteIcon />
+                    <DeleteIcon fontSize="small" />
                   </IconButton>
                 </Tooltip>
               </ListItemSecondaryAction>
@@ -156,7 +161,9 @@ const VersionControlModal: React.FC<VersionControlModalProps> = ({
         </List>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Close</Button>
+        <Button onClick={onClose} size="small">
+          Close
+        </Button>
       </DialogActions>
     </Dialog>
   );

@@ -68,13 +68,25 @@ export default function RoomPage() {
 
   return (
     <Container
-      maxWidth="xl"
-      sx={{ mt: 4, mb: 4, height: "calc(100vh - 100px)" }}
+      maxWidth={false}
+      disableGutters
+      sx={{ height: "calc(100vh - 64px)", overflow: "hidden" }}
     >
-      <Grid container spacing={3} sx={{ height: "100%" }}>
-        <Grid item xs={12} md={10} sx={{ height: "100%" }}>
-          <Box
-            sx={{ height: "100%", display: "flex", flexDirection: "column" }}
+      <Grid container spacing={2} sx={{ height: "100%" }}>
+        <Grid
+          item
+          xs={12}
+          md={10}
+          sx={{ height: "100%", display: "flex", flexDirection: "column" }}
+        >
+          <Paper
+            elevation={3}
+            sx={{
+              p: 2,
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+            }}
           >
             {currentRoom && (
               <CollaborativeEditor
@@ -82,14 +94,25 @@ export default function RoomPage() {
                 initialLanguage={currentLanguage}
               />
             )}
-          </Box>
+          </Paper>
         </Grid>
-        <Grid item xs={12} md={2} sx={{ height: "100%" }}>
-          <Box
-            sx={{ height: "100%", display: "flex", flexDirection: "column" }}
+        <Grid
+          item
+          xs={12}
+          md={2}
+          sx={{ height: "100%", display: "flex", flexDirection: "column" }}
+        >
+          <Paper
+            elevation={3}
+            sx={{
+              p: 2,
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+            }}
           >
             {currentRoom && <VoiceChat roomId={currentRoom} />}
-          </Box>
+          </Paper>
         </Grid>
       </Grid>
     </Container>

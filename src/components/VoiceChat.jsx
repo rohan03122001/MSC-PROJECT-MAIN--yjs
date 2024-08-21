@@ -206,47 +206,25 @@ const VoiceChat = ({ roomId }) => {
   };
 
   return (
-    <Paper elevation={3} sx={{ p: 3, bgcolor: "background.paper", mt: 3 }}>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: 2,
-        }}
+    <Box sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
+      <Typography
+        variant="h6"
+        sx={{ mb: 2, display: "flex", alignItems: "center" }}
       >
-        <Typography
-          variant="h5"
-          sx={{ display: "flex", alignItems: "center", color: "primary.main" }}
-        >
-          <VoiceChatIcon sx={{ mr: 1 }} />
-          Voice Chat
-        </Typography>
-        {isConnected && localStream && (
-          <Tooltip title={isMuted ? "Unmute" : "Mute"}>
-            <IconButton
-              onClick={toggleMute}
-              color={isMuted ? "error" : "primary"}
-            >
-              {isMuted ? <MicOffIcon /> : <MicIcon />}
-            </IconButton>
-          </Tooltip>
-        )}
-      </Box>
+        <VoiceChatIcon sx={{ mr: 1 }} />
+        Voice Chat
+      </Typography>
       <Typography variant="body2" gutterBottom color="text.secondary">
         Status: {connectionStatus}
       </Typography>
       {connectionError && (
-        <Typography color="error" gutterBottom>
+        <Typography color="error" gutterBottom variant="body2">
           Error: {connectionError}
         </Typography>
       )}
       {isConnected ? (
-        <Box>
-          <Typography variant="body2" gutterBottom color="text.secondary">
-            Connected to room: {roomId}
-          </Typography>
-          <List>
+        <Box sx={{ flexGrow: 1, overflowY: "auto" }}>
+          <List dense>
             <ListItem>
               <ListItemAvatar>
                 <Avatar>
@@ -257,6 +235,17 @@ const VoiceChat = ({ roomId }) => {
                 primary="You"
                 secondary={isMuted ? "Muted" : "Speaking"}
               />
+              <IconButton
+                onClick={toggleMute}
+                color={isMuted ? "error" : "primary"}
+                size="small"
+              >
+                {isMuted ? (
+                  <MicOffIcon fontSize="small" />
+                ) : (
+                  <MicIcon fontSize="small" />
+                )}
+              </IconButton>
             </ListItem>
             {remoteStreams
               .filter((stream) => !isLocalStream(stream.id))
@@ -273,50 +262,36 @@ const VoiceChat = ({ roomId }) => {
                       audioRefs.current[stream.id]?.muted ? "Muted" : "Speaking"
                     }
                   />
-                  <Tooltip
-                    title={
-                      audioRefs.current[stream.id]?.muted ? "Unmute" : "Mute"
-                    }
+                  <IconButton
+                    edge="end"
+                    aria-label="toggle mute"
+                    onClick={() => toggleRemoteMute(stream)}
+                    color="primary"
+                    size="small"
                   >
-                    <IconButton
-                      edge="end"
-                      aria-label="toggle mute"
-                      onClick={() => toggleRemoteMute(stream)}
-                      color="primary"
-                    >
-                      {audioRefs.current[stream.id]?.muted ? (
-                        <VolumeOffIcon />
-                      ) : (
-                        <VolumeUpIcon />
-                      )}
-                    </IconButton>
-                  </Tooltip>
+                    {audioRefs.current[stream.id]?.muted ? (
+                      <VolumeOffIcon fontSize="small" />
+                    ) : (
+                      <VolumeUpIcon fontSize="small" />
+                    )}
+                  </IconButton>
                 </ListItem>
               ))}
           </List>
         </Box>
       ) : (
-        <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
-          <Fade in={!isConnected} timeout={1000}>
-            <CircularProgress />
-          </Fade>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            flexGrow: 1,
+          }}
+        >
+          <CircularProgress size={24} />
         </Box>
       )}
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={6000}
-        onClose={() => setSnackbarOpen(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert
-          onClose={() => setSnackbarOpen(false)}
-          severity={snackbarSeverity}
-          sx={{ width: "100%" }}
-        >
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
-    </Paper>
+    </Box>
   );
 };
 

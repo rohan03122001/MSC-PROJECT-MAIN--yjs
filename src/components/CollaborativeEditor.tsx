@@ -11,16 +11,10 @@ import {
   FormControl,
   InputLabel,
   Box,
-  Chip,
-  Tooltip,
   IconButton,
   useTheme,
 } from "@mui/material";
-import {
-  PersonOutline,
-  Code as CodeIcon,
-  History as HistoryIcon,
-} from "@mui/icons-material";
+import { Code as CodeIcon, History as HistoryIcon } from "@mui/icons-material";
 import CodeExecutionEnvironment from "./CodeExecutionEnvironment";
 import VersionControlModal from "./VersionControlModal";
 import { supabase } from "@/lib/supabaseClient";
@@ -135,7 +129,13 @@ function CollaborativeEditor({
   return (
     <Paper
       elevation={3}
-      sx={{ p: 3, bgcolor: "background.paper", height: "100%" }}
+      sx={{
+        p: 2,
+        bgcolor: "background.paper",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+      }}
     >
       <Box
         sx={{
@@ -146,14 +146,14 @@ function CollaborativeEditor({
         }}
       >
         <Typography
-          variant="h5"
+          variant="h6"
           sx={{ display: "flex", alignItems: "center", color: "primary.main" }}
         >
           <CodeIcon sx={{ mr: 1 }} />
           Collaborative Editor
         </Typography>
         <Box sx={{ display: "flex", alignItems: "center" }}>
-          <FormControl sx={{ minWidth: 120, mr: 2 }}>
+          <FormControl sx={{ minWidth: 120, mr: 2 }} size="small">
             <InputLabel id="language-select-label">Language</InputLabel>
             <Select
               labelId="language-select-label"
@@ -170,6 +170,7 @@ function CollaborativeEditor({
           <IconButton
             onClick={() => setVersionControlOpen(true)}
             color="primary"
+            size="small"
           >
             <HistoryIcon />
           </IconButton>
@@ -177,7 +178,7 @@ function CollaborativeEditor({
       </Box>
       <Box
         sx={{
-          height: "calc(100% - 100px)",
+          flexGrow: 1,
           border: 1,
           borderColor: "divider",
           borderRadius: 1,
@@ -190,7 +191,7 @@ function CollaborativeEditor({
           theme="vs-dark"
           options={{
             minimap: { enabled: false },
-            fontSize: 16,
+            fontSize: 14,
             lineNumbers: "on",
             roundedSelection: false,
             scrollBeyondLastLine: false,
