@@ -76,70 +76,60 @@ const Header: React.FC = () => {
       position="static"
       color="transparent"
       elevation={0}
-      sx={{ borderBottom: 1, borderColor: "divider" }}
+      sx={{
+        borderBottom: 1,
+        borderColor: "divider",
+        backgroundColor: "background.paper",
+      }}
     >
-      <Toolbar>
-        <Typography
-          variant="h6"
+      <Toolbar sx={{ justifyContent: "space-between" }}>
+        <Box
           component={Link}
           href="/"
           sx={{
-            flexGrow: 1,
             textDecoration: "none",
             color: "primary.main",
-            fontWeight: "bold",
             display: "flex",
             alignItems: "center",
           }}
         >
-          <CodeIcon sx={{ mr: 1 }} />
-          DisCoder
-        </Typography>
+          <CodeIcon
+            sx={{
+              fontSize: 32,
+              mr: 1,
+              color: "primary.main",
+              filter: "drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.25))",
+            }}
+          />
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: "bold",
+              letterSpacing: 1,
+              textShadow: "0px 2px 2px rgba(0, 0, 0, 0.15)",
+            }}
+          >
+            DisCoder
+          </Typography>
+        </Box>
+
         {isMobile ? (
-          <>
-            <IconButton
-              edge="end"
-              color="inherit"
-              aria-label="menu"
-              onClick={handleMenuOpen}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={handleMenuClose}
-            >
-              {roomCode && (
-                <MenuItem onClick={copyRoomCode}>
-                  <ContentCopyIcon sx={{ mr: 1 }} />
-                  {copied ? "Copied!" : "Copy Room Code"}
-                </MenuItem>
-              )}
-              <MenuItem
-                component={Link}
-                href={FEEDBACK_FORM_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <FeedbackIcon sx={{ mr: 1 }} />
-                Provide Feedback
-              </MenuItem>
-              {user && (
-                <MenuItem onClick={handleSignOut}>
-                  <ExitToAppIcon sx={{ mr: 1 }} />
-                  Sign Out
-                </MenuItem>
-              )}
-            </Menu>
-          </>
+          <IconButton
+            edge="end"
+            color="inherit"
+            aria-label="menu"
+            onClick={handleMenuOpen}
+          >
+            <MenuIcon />
+          </IconButton>
         ) : (
-          <>
+          <Box sx={{ display: "flex", alignItems: "center" }}>
             {roomCode && (
               <>
                 <Tooltip title={copied ? "Copied!" : "Copy Room Code"}>
                   <Button
-                    color="inherit"
+                    color="primary"
+                    variant="outlined"
                     onClick={copyRoomCode}
                     startIcon={<ContentCopyIcon />}
                     sx={{ mr: 2 }}
@@ -147,14 +137,19 @@ const Header: React.FC = () => {
                     {roomCode}
                   </Button>
                 </Tooltip>
-                <Button color="error" onClick={handleLeaveRoom} sx={{ mr: 2 }}>
+                <Button
+                  color="error"
+                  variant="contained"
+                  onClick={handleLeaveRoom}
+                  sx={{ mr: 2 }}
+                >
                   Leave Room
                 </Button>
               </>
             )}
             <Tooltip title="Provide Feedback">
               <IconButton
-                color="inherit"
+                color="primary"
                 component={Link}
                 href={FEEDBACK_FORM_URL}
                 target="_blank"
@@ -165,19 +160,47 @@ const Header: React.FC = () => {
               </IconButton>
             </Tooltip>
             {user && (
-              <Box sx={{ display: "flex", alignItems: "center" }}>
+              <>
                 <Typography variant="body2" sx={{ mr: 2 }}>
                   {user.email}
                 </Typography>
                 <Tooltip title="Sign Out">
-                  <IconButton color="inherit" onClick={handleSignOut}>
+                  <IconButton color="primary" onClick={handleSignOut}>
                     <ExitToAppIcon />
                   </IconButton>
                 </Tooltip>
-              </Box>
+              </>
             )}
-          </>
+          </Box>
         )}
+
+        <Menu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={handleMenuClose}
+        >
+          {roomCode && (
+            <MenuItem onClick={copyRoomCode}>
+              <ContentCopyIcon sx={{ mr: 1 }} />
+              {copied ? "Copied!" : "Copy Room Code"}
+            </MenuItem>
+          )}
+          <MenuItem
+            component={Link}
+            href={FEEDBACK_FORM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <FeedbackIcon sx={{ mr: 1 }} />
+            Provide Feedback
+          </MenuItem>
+          {user && (
+            <MenuItem onClick={handleSignOut}>
+              <ExitToAppIcon sx={{ mr: 1 }} />
+              Sign Out
+            </MenuItem>
+          )}
+        </Menu>
       </Toolbar>
     </AppBar>
   );

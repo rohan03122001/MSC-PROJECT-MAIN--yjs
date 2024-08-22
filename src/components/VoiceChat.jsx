@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import IonSfuClient from "@/lib/ionSfuClient";
 import {
-  Paper,
   Typography,
   IconButton,
   Box,
@@ -14,7 +13,6 @@ import {
   ListItemAvatar,
   ListItemText,
   Avatar,
-  Fade,
 } from "@mui/material";
 import MicIcon from "@mui/icons-material/Mic";
 import MicOffIcon from "@mui/icons-material/MicOff";
@@ -43,6 +41,17 @@ const VoiceChat = ({ roomId }) => {
     setSnackbarOpen(true);
   };
 
+  const clearError = useCallback(() => {
+    setConnectionError(null);
+  }, []);
+
+  const handleConnectionSuccess = useCallback(() => {
+    setIsConnected(true);
+    setConnectionStatus("Connected");
+    clearError();
+    showSnackbar("Connected to voice chat", "success");
+  }, [clearError]);
+
   useEffect(() => {
     console.log("VoiceChat: Component mounted");
     let ionClient = null;
@@ -50,6 +59,7 @@ const VoiceChat = ({ roomId }) => {
     const initializeClient = async () => {
       console.log("VoiceChat: Initializing client...");
       setConnectionStatus("Initializing");
+      clearError();
       try {
         const wsUrl = `wss://rohanbhujbal.live/ws`;
         console.log(`VoiceChat: Using WebSocket URL: ${wsUrl}`);
@@ -76,10 +86,7 @@ const VoiceChat = ({ roomId }) => {
         await ionClient.connect(roomId, uid);
 
         console.log(`VoiceChat: Connected successfully to room ${roomId}`);
-        setIsConnected(true);
-        setConnectionStatus("Connected");
-        setConnectionError(null);
-        showSnackbar("Connected to voice chat", "success");
+        handleConnectionSuccess();
 
         console.log("VoiceChat: Auto-starting audio");
         await startAudio(ionClient);
@@ -91,6 +98,7 @@ const VoiceChat = ({ roomId }) => {
           setRemoteStreams((prevStreams) => {
             if (!prevStreams.some((s) => s.id === stream.id)) {
               console.log(`VoiceChat: Adding new remote stream ${stream.id}`);
+              handleConnectionSuccess(); // Ensure connection is marked as successful when we receive a track
               return [...prevStreams, stream];
             }
             return prevStreams;
@@ -100,6 +108,7 @@ const VoiceChat = ({ roomId }) => {
         console.error(`VoiceChat: Error connecting to room ${roomId}:`, error);
         setConnectionStatus("Connection failed");
         setConnectionError(error.message || "Unknown error occurred");
+        setIsConnected(false);
         showSnackbar("Failed to connect to voice chat", "error");
       }
     };
@@ -113,7 +122,7 @@ const VoiceChat = ({ roomId }) => {
         ionClient.close();
       }
     };
-  }, [roomId]);
+  }, [roomId, clearError, handleConnectionSuccess]);
 
   useEffect(() => {
     console.log("VoiceChat: Remote streams updated:", remoteStreams);
@@ -217,7 +226,7 @@ const VoiceChat = ({ roomId }) => {
       <Typography variant="body2" gutterBottom color="text.secondary">
         Status: {connectionStatus}
       </Typography>
-      {connectionError && (
+      {connectionError && !isConnected && (
         <Typography color="error" gutterBottom variant="body2">
           Error: {connectionError}
         </Typography>
@@ -291,6 +300,20 @@ const VoiceChat = ({ roomId }) => {
           <CircularProgress size={24} />
         </Box>
       )}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
