@@ -29,7 +29,7 @@ const FeedbackNotification: React.FC = () => {
 
   const handleGiveFeedback = () => {
     window.open(
-      "https://forms.gle/ba9U4nFTw9ArqPqp9",
+      "https://forms.gle/FPTzFag1KmPfhCrh7",
       "_blank",
       "noopener,noreferrer"
     );
