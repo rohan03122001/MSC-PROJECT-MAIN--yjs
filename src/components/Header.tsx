@@ -14,15 +14,18 @@ import {
   MenuItem,
   useMediaQuery,
   useTheme,
+  Box,
 } from "@mui/material";
 import {
   ExitToApp as ExitToAppIcon,
   ContentCopy as ContentCopyIcon,
   Feedback as FeedbackIcon,
   Menu as MenuIcon,
+  Code as CodeIcon,
 } from "@mui/icons-material";
 
-const FEEDBACK_FORM_URL = "https://forms.gle/ba9U4nFTw9ArqPqp9";
+//const FEEDBACK_FORM_URL = "https://forms.gle/ba9U4nFTw9ArqPqp9";
+const FEEDBACK_FORM_URL = "https://forms.gle/FPTzFag1KmPfhCrh7";
 
 const Header: React.FC = () => {
   const { user } = useAuth();
@@ -69,7 +72,12 @@ const Header: React.FC = () => {
   };
 
   return (
-    <AppBar position="static" color="primary" elevation={0}>
+    <AppBar
+      position="static"
+      color="transparent"
+      elevation={0}
+      sx={{ borderBottom: 1, borderColor: "divider" }}
+    >
       <Toolbar>
         <Typography
           variant="h6"
@@ -78,10 +86,13 @@ const Header: React.FC = () => {
           sx={{
             flexGrow: 1,
             textDecoration: "none",
-            color: "inherit",
+            color: "primary.main",
             fontWeight: "bold",
+            display: "flex",
+            alignItems: "center",
           }}
         >
+          <CodeIcon sx={{ mr: 1 }} />
           DisCoder
         </Typography>
         {isMobile ? (
@@ -131,11 +142,12 @@ const Header: React.FC = () => {
                     color="inherit"
                     onClick={copyRoomCode}
                     startIcon={<ContentCopyIcon />}
+                    sx={{ mr: 2 }}
                   >
                     {roomCode}
                   </Button>
                 </Tooltip>
-                <Button color="error" onClick={handleLeaveRoom}>
+                <Button color="error" onClick={handleLeaveRoom} sx={{ mr: 2 }}>
                   Leave Room
                 </Button>
               </>
@@ -147,12 +159,13 @@ const Header: React.FC = () => {
                 href={FEEDBACK_FORM_URL}
                 target="_blank"
                 rel="noopener noreferrer"
+                sx={{ mr: 2 }}
               >
                 <FeedbackIcon />
               </IconButton>
             </Tooltip>
             {user && (
-              <>
+              <Box sx={{ display: "flex", alignItems: "center" }}>
                 <Typography variant="body2" sx={{ mr: 2 }}>
                   {user.email}
                 </Typography>
@@ -161,7 +174,7 @@ const Header: React.FC = () => {
                     <ExitToAppIcon />
                   </IconButton>
                 </Tooltip>
-              </>
+              </Box>
             )}
           </>
         )}

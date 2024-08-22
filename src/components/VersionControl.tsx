@@ -16,10 +16,13 @@ import {
   TextField,
   Snackbar,
   Alert,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
 import RestoreIcon from "@mui/icons-material/Restore";
 import DeleteIcon from "@mui/icons-material/Delete";
+import HistoryIcon from "@mui/icons-material/History";
 
 interface Version {
   name: string;
@@ -137,8 +140,13 @@ const VersionControl: React.FC<VersionControlProps> = ({
   };
 
   return (
-    <Paper elevation={3} sx={{ p: 3, mt: 3 }}>
-      <Typography variant="h6" gutterBottom>
+    <Paper elevation={3} sx={{ p: 3, mt: 3, bgcolor: "background.paper" }}>
+      <Typography
+        variant="h6"
+        gutterBottom
+        sx={{ display: "flex", alignItems: "center", color: "primary.main" }}
+      >
+        <HistoryIcon sx={{ mr: 1 }} />
         Version Control
       </Typography>
       <Button
@@ -156,30 +164,31 @@ const VersionControl: React.FC<VersionControlProps> = ({
       </Typography>
       <List>
         {versions.map((version) => (
-          <ListItem key={version.id}>
+          <ListItem key={version.id} divider>
             <ListItemText
               primary={version.name || `Version ${version.id}`}
               secondary={new Date(version.created_at).toLocaleString()}
             />
             <ListItemSecondaryAction>
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<RestoreIcon />}
-                onClick={() => revertToVersion(version.snapshot)}
-                sx={{ mr: 1 }}
-              >
-                Revert
-              </Button>
-              <Button
-                variant="outlined"
-                size="small"
-                color="error"
-                startIcon={<DeleteIcon />}
-                onClick={() => deleteVersion(version.id)}
-              >
-                Delete
-              </Button>
+              <Tooltip title="Revert to this version">
+                <IconButton
+                  edge="end"
+                  aria-label="revert"
+                  onClick={() => revertToVersion(version.snapshot)}
+                  sx={{ mr: 1 }}
+                >
+                  <RestoreIcon />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Delete this version">
+                <IconButton
+                  edge="end"
+                  aria-label="delete"
+                  onClick={() => deleteVersion(version.id)}
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </Tooltip>
             </ListItemSecondaryAction>
           </ListItem>
         ))}

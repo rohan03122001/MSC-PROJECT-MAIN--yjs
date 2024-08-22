@@ -5,6 +5,8 @@ class IonSfuClient {
   reconnectAttempts = 0;
   maxReconnectAttempts = 5;
   keepaliveInterval = null;
+  streams = new Map();
+  onTrackCallbacks = [];
 
   constructor(url) {
     console.log(`IonSfuClient: Constructor called with URL: ${url}`);
@@ -18,52 +20,35 @@ class IonSfuClient {
 
     this.signal.onopen = () => {
       console.log(`IonSfuClient: Signal connection opened to ${url}`);
-      console.log(
-        `IonSfuClient: WebSocket readyState: ${this.signal.socket.readyState}`
-      );
-      this.reconnectAttempts = 0; // Reset reconnect attempts on successful connection
+      console.log(`IonSfuClient: WebSocket readyState: ${this.signal.socket.readyState}`);
+      this.reconnectAttempts = 0;
     };
 
     this.signal.onclose = (event) => {
       console.log(`IonSfuClient: Signal connection closed. Event:`, event);
-      console.log(
-        `IonSfuClient: Close code: ${event.code}, reason: ${event.reason}`
-      );
-      if (
-        !event.wasClean &&
-        this.reconnectAttempts < this.maxReconnectAttempts
-      ) {
+      if (!event.wasClean && this.reconnectAttempts < this.maxReconnectAttempts) {
         this.reconnectAttempts++;
-        console.log(
-          `IonSfuClient: Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})`
-        );
-        setTimeout(
-          () => this.initializeConnection(url),
-          5000 * Math.pow(2, this.reconnectAttempts - 1)
-        ); // Exponential backoff
+        console.log(`IonSfuClient: Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+        setTimeout(() => this.initializeConnection(url), 5000 * Math.pow(2, this.reconnectAttempts - 1));
       } else if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-        console.log(
-          `IonSfuClient: Max reconnection attempts reached. Giving up.`
-        );
+        console.log(`IonSfuClient: Max reconnection attempts reached. Giving up.`);
         this.onConnectionLost && this.onConnectionLost();
       }
     };
 
     this.signal.onerror = (error) => {
       console.error("IonSfuClient: Signal error:", error);
-      console.log(
-        `IonSfuClient: Error name: ${error.name}, message: ${error.message}`
-      );
-      if (error.event) {
-        console.log(`IonSfuClient: Error event type: ${error.event.type}`);
-      }
+    };
+
+    this.client.ontrack = (track, stream) => {
+      console.log(`IonSfuClient: New track received. Type: ${track.kind}, StreamID: ${stream.id}`);
+      this.streams.set(stream.id, stream);
+      this.onTrackCallbacks.forEach(callback => callback(track, stream));
     };
   }
 
   async connect(sessionId, uid) {
-    console.log(
-      `IonSfuClient: Connecting to session ${sessionId} with UID ${uid}`
-    );
+    console.log(`IonSfuClient: Connecting to session ${sessionId} with UID ${uid}`);
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
         console.error(`IonSfuClient: Connection timeout after 10 seconds`);
@@ -72,22 +57,14 @@ class IonSfuClient {
 
       this.signal.onopen = async () => {
         clearTimeout(timeout);
-        console.log(
-          `IonSfuClient: Signal connection opened, joining session ${sessionId}`
-        );
+        console.log(`IonSfuClient: Signal connection opened, joining session ${sessionId}`);
         try {
-          console.log(`IonSfuClient: Attempting to join session ${sessionId}`);
           await this.client.join(sessionId, uid);
-          console.log(
-            `IonSfuClient: Successfully joined session ${sessionId} with UID ${uid}`
-          );
+          console.log(`IonSfuClient: Successfully joined session ${sessionId} with UID ${uid}`);
           this.startKeepalive();
           resolve();
         } catch (error) {
-          console.error(
-            `IonSfuClient: Error joining session ${sessionId}:`,
-            error
-          );
+          console.error(`IonSfuClient: Error joining session ${sessionId}:`, error);
           reject(error);
         }
       };
@@ -95,36 +72,24 @@ class IonSfuClient {
   }
 
   onTrack(callback) {
-    console.log("IonSfuClient: Setting up onTrack callback");
-    this.client.ontrack = (track, stream) => {
-      console.log(
-        `IonSfuClient: Received track: ${track.kind} for stream: ${stream.id}`
-      );
-      console.log(`IonSfuClient: Track settings:`, track.getSettings());
-      callback(track, stream);
-    };
+    console.log("IonSfuClient: Adding onTrack callback");
+    this.onTrackCallbacks.push(callback);
+    // Call the callback for all existing streams
+    this.streams.forEach((stream) => {
+      stream.getTracks().forEach((track) => callback(track, stream));
+    });
   }
 
   async publishStream(constraints = { audio: true, video: false }) {
-    console.log(
-      "IonSfuClient: Publishing stream with constraints:",
-      constraints
-    );
+    console.log("IonSfuClient: Publishing stream with constraints:", constraints);
     try {
       const localStream = await LocalStream.getUserMedia(constraints);
-      console.log(
-        `IonSfuClient: Local stream obtained. Stream ID: ${localStream.id}`
-      );
+      console.log(`IonSfuClient: Local stream obtained. Stream ID: ${localStream.id}`);
       await this.client.publish(localStream);
-      console.log(
-        `IonSfuClient: Stream ${localStream.id} published successfully`
-      );
+      console.log(`IonSfuClient: Stream ${localStream.id} published successfully`);
       return localStream;
     } catch (error) {
       console.error("IonSfuClient: Error publishing stream:", error);
-      console.log(
-        `IonSfuClient: Error name: ${error.name}, message: ${error.message}`
-      );
       throw error;
     }
   }
@@ -135,16 +100,11 @@ class IonSfuClient {
       await this.unpublishStream(stream);
       stream.getTracks().forEach((track) => {
         track.stop();
-        console.log(
-          `IonSfuClient: Stopped track: ${track.kind} for stream ${stream.id}`
-        );
+        console.log(`IonSfuClient: Stopped track: ${track.kind} for stream ${stream.id}`);
       });
       console.log(`IonSfuClient: Stream ${stream.id} cleaned up successfully`);
     } catch (error) {
-      console.error(
-        `IonSfuClient: Error cleaning up stream ${stream.id}:`,
-        error
-      );
+      console.error(`IonSfuClient: Error cleaning up stream ${stream.id}:`, error);
       throw error;
     }
   }
@@ -155,10 +115,7 @@ class IonSfuClient {
       await this.client.unpublish(stream);
       console.log(`IonSfuClient: Stream ${stream.id} unpublished successfully`);
     } catch (error) {
-      console.error(
-        `IonSfuClient: Error unpublishing stream ${stream.id}:`,
-        error
-      );
+      console.error(`IonSfuClient: Error unpublishing stream ${stream.id}:`, error);
       throw error;
     }
   }
@@ -169,9 +126,7 @@ class IonSfuClient {
     try {
       this.client.close();
       this.signal.close();
-      console.log(
-        "IonSfuClient: Client and signal connections closed successfully"
-      );
+      console.log("IonSfuClient: Client and signal connections closed successfully");
     } catch (error) {
       console.error("IonSfuClient: Error closing connections:", error);
     }
@@ -187,7 +142,7 @@ class IonSfuClient {
         this.signal.socket.send(JSON.stringify({ method: "keepalive" }));
         console.log("IonSfuClient: Sent keepalive");
       }
-    }, 30000); // Send keepalive every 30 seconds
+    }, 30000);
   }
 
   stopKeepalive() {

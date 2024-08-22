@@ -3,10 +3,9 @@
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
-import RoomManager from "@/components/RoomManager";
 import { useAuth } from "@/lib/AuthContext";
 import Link from "next/link";
-import { Button, Container, Grid, Paper, Typography } from "@mui/material";
+import { Button, Container, Grid, Paper, Typography, Box } from "@mui/material";
 
 const CollaborativeEditor = dynamic(
   () => import("@/components/CollaborativeEditor"),
@@ -68,23 +67,52 @@ export default function RoomPage() {
   }
 
   return (
-    <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
-      <Grid container spacing={3}>
-        <Grid item xs={12} lg={8}>
-          {currentRoom && (
-            <CollaborativeEditor
-              roomId={currentRoom}
-              initialLanguage={currentLanguage}
-            />
-          )}
+    <Container
+      maxWidth={false}
+      disableGutters
+      sx={{ height: "calc(100vh - 64px)", overflow: "hidden" }}
+    >
+      <Grid container spacing={2} sx={{ height: "100%" }}>
+        <Grid
+          item
+          xs={12}
+          md={10}
+          sx={{ height: "100%", display: "flex", flexDirection: "column" }}
+        >
+          <Paper
+            elevation={3}
+            sx={{
+              p: 2,
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            {currentRoom && (
+              <CollaborativeEditor
+                roomId={currentRoom}
+                initialLanguage={currentLanguage}
+              />
+            )}
+          </Paper>
         </Grid>
-        <Grid item xs={12} lg={4}>
-          <RoomManager
-            currentRoom={currentRoom}
-            setCurrentRoom={setCurrentRoom}
-            setCurrentLanguage={setCurrentLanguage}
-          />
-          {currentRoom && <VoiceChat roomId={currentRoom} />}
+        <Grid
+          item
+          xs={12}
+          md={2}
+          sx={{ height: "100%", display: "flex", flexDirection: "column" }}
+        >
+          <Paper
+            elevation={3}
+            sx={{
+              p: 2,
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            {currentRoom && <VoiceChat roomId={currentRoom} />}
+          </Paper>
         </Grid>
       </Grid>
     </Container>

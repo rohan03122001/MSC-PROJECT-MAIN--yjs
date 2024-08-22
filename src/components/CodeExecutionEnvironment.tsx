@@ -12,6 +12,7 @@ import {
   Box,
   CircularProgress,
   Collapse,
+  IconButton,
 } from "@mui/material";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -80,29 +81,24 @@ const CodeExecutionEnvironment: React.FC<CodeExecutionEnvironmentProps> = ({
   };
 
   return (
-    <Paper elevation={3} sx={{ p: 3, mt: 3 }}>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
+    <Box sx={{ mt: 2 }}>
+      <Button
+        variant="contained"
+        color="primary"
+        startIcon={
+          loading ? (
+            <CircularProgress size={20} color="inherit" />
+          ) : (
+            <PlayArrowIcon />
+          )
+        }
+        onClick={executeCode}
+        disabled={loading}
+        fullWidth
+        size="small"
       >
-        <Typography variant="h6" gutterBottom>
-          Code Execution
-        </Typography>
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={
-            loading ? <CircularProgress size={20} /> : <PlayArrowIcon />
-          }
-          onClick={executeCode}
-          disabled={loading}
-        >
-          {loading ? "Executing..." : "Execute Code"}
-        </Button>
-      </Box>
+        {loading ? "Executing..." : "Execute Code"}
+      </Button>
       {error && (
         <Typography color="error" sx={{ mt: 2 }}>
           {error}
@@ -112,20 +108,29 @@ const CodeExecutionEnvironment: React.FC<CodeExecutionEnvironmentProps> = ({
         <Box sx={{ mt: 2 }}>
           <Button
             onClick={() => setExpanded(!expanded)}
-            startIcon={expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+            endIcon={expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+            sx={{ color: "text.secondary" }}
+            size="small"
           >
             {expanded ? "Hide Output" : "Show Output"}
           </Button>
           <Collapse in={expanded}>
-            <Paper variant="outlined" sx={{ p: 2, mt: 2, bgcolor: "grey.900" }}>
-              <Typography variant="subtitle1" gutterBottom>
+            <Paper
+              variant="outlined"
+              sx={{ p: 2, mt: 2, bgcolor: "background.default" }}
+            >
+              <Typography variant="subtitle2" gutterBottom color="primary">
                 Output:
               </Typography>
               <pre
                 style={{
                   whiteSpace: "pre-wrap",
                   wordBreak: "break-word",
-                  color: "white",
+                  color: "inherit",
+                  fontFamily: "'Roboto Mono', monospace",
+                  fontSize: "0.8rem",
+                  maxHeight: "200px",
+                  overflowY: "auto",
                 }}
               >
                 {result.stdout ||
@@ -133,14 +138,17 @@ const CodeExecutionEnvironment: React.FC<CodeExecutionEnvironmentProps> = ({
                   result.compile_output ||
                   result.message}
               </pre>
-              <Typography variant="body2" sx={{ mt: 1, color: "grey.400" }}>
+              <Typography
+                variant="caption"
+                sx={{ mt: 1, color: "text.secondary" }}
+              >
                 Execution time: {result.time} | Memory used: {result.memory}
               </Typography>
             </Paper>
           </Collapse>
         </Box>
       )}
-    </Paper>
+    </Box>
   );
 };
 

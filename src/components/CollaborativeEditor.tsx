@@ -11,23 +11,12 @@ import {
   FormControl,
   InputLabel,
   Box,
-  Chip,
-  Tooltip,
   IconButton,
-  Drawer,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
+  useTheme,
 } from "@mui/material";
-import {
-  PersonOutline,
-  Settings,
-  Brightness4,
-  Brightness7,
-} from "@mui/icons-material";
+import { Code as CodeIcon, History as HistoryIcon } from "@mui/icons-material";
 import CodeExecutionEnvironment from "./CodeExecutionEnvironment";
-import VersionControl from "./VersionControl";
+import VersionControlModal from "./VersionControlModal";
 import { supabase } from "@/lib/supabaseClient";
 
 const Editor = dynamic(() => import("@monaco-editor/react"), { ssr: false });
@@ -48,8 +37,8 @@ function CollaborativeEditor({
   const providerRef = useRef<WebsocketProvider | null>(null);
   const bindingRef = useRef<MonacoBinding | null>(null);
   const [users, setUsers] = useState<string[]>([]);
-  const [theme, setTheme] = useState<"vs-dark" | "light">("vs-dark");
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const theme = useTheme();
+  const [versionControlOpen, setVersionControlOpen] = useState(false);
 
   useEffect(() => {
     const setupCollaboration = async () => {
@@ -137,12 +126,17 @@ function CollaborativeEditor({
     }
   };
 
-  const toggleTheme = () => {
-    setTheme(theme === "vs-dark" ? "light" : "vs-dark");
-  };
-
   return (
-    <Paper elevation={3} sx={{ p: 3 }}>
+    <Paper
+      elevation={3}
+      sx={{
+        p: 2,
+        bgcolor: "background.paper",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       <Box
         sx={{
           display: "flex",
@@ -151,56 +145,72 @@ function CollaborativeEditor({
           mb: 2,
         }}
       >
-        <Typography variant="h5">Collaborative Editor</Typography>
-        <Box>
-          {users.map((user, index) => (
-            <Tooltip key={index} title={user}>
-              <Chip
-                icon={<PersonOutline />}
-                label={user.charAt(0).toUpperCase()}
-                sx={{ mr: 1 }}
-              />
-            </Tooltip>
-          ))}
+        <Typography
+          variant="h6"
+          sx={{ display: "flex", alignItems: "center", color: "primary.main" }}
+        >
+          <CodeIcon sx={{ mr: 1 }} />
+          Collaborative Editor
+        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          <FormControl sx={{ minWidth: 120, mr: 2 }} size="small">
+            <InputLabel id="language-select-label">Language</InputLabel>
+            <Select
+              labelId="language-select-label"
+              value={language}
+              onChange={(e) => setLanguage(e.target.value as string)}
+              label="Language"
+            >
+              <MenuItem value="javascript">JavaScript</MenuItem>
+              <MenuItem value="python">Python</MenuItem>
+              <MenuItem value="java">Java</MenuItem>
+              <MenuItem value="go">Go</MenuItem>
+            </Select>
+          </FormControl>
+          <IconButton
+            onClick={() => setVersionControlOpen(true)}
+            color="primary"
+            size="small"
+          >
+            <HistoryIcon />
+          </IconButton>
         </Box>
       </Box>
-      <FormControl fullWidth margin="normal">
-        <InputLabel id="language-select-label">Language</InputLabel>
-        <Select
-          labelId="language-select-label"
-          value={language}
-          onChange={(e) => setLanguage(e.target.value as string)}
-          label="Language"
-        >
-          <MenuItem value="javascript">JavaScript</MenuItem>
-          <MenuItem value="python">Python</MenuItem>
-          <MenuItem value="java">Java</MenuItem>
-          <MenuItem value="go">Go</MenuItem>
-        </Select>
-      </FormControl>
-      <Editor
-        height="50vh"
-        language={language}
-        theme={theme}
-        options={{
-          minimap: { enabled: false },
-          fontSize: 16,
-          lineNumbers: "on",
-          roundedSelection: false,
-          scrollBeyondLastLine: false,
-          readOnly: false,
+      <Box
+        sx={{
+          flexGrow: 1,
+          border: 1,
+          borderColor: "divider",
+          borderRadius: 1,
+          overflow: "hidden",
         }}
-        onMount={(editor) => {
-          setEditor(editor);
-        }}
-        onChange={handleEditorChange}
-      />
-      <VersionControl
+      >
+        <Editor
+          height="100%"
+          language={language}
+          theme="vs-dark"
+          options={{
+            minimap: { enabled: false },
+            fontSize: 14,
+            lineNumbers: "on",
+            roundedSelection: false,
+            scrollBeyondLastLine: false,
+            readOnly: false,
+          }}
+          onMount={(editor) => {
+            setEditor(editor);
+          }}
+          onChange={handleEditorChange}
+        />
+      </Box>
+      <CodeExecutionEnvironment code={code} language={language} />
+      <VersionControlModal
+        open={versionControlOpen}
+        onClose={() => setVersionControlOpen(false)}
         roomId={roomId}
         currentCode={code}
         onRevert={handleRevert}
       />
-      <CodeExecutionEnvironment code={code} language={language} />
     </Paper>
   );
 }

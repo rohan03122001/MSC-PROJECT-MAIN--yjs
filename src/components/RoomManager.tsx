@@ -24,12 +24,14 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Tooltip,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import JoinFullIcon from "@mui/icons-material/JoinFull";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import DeleteIcon from "@mui/icons-material/Delete";
+import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
 
 const RoomManager: React.FC<RoomManagerProps> = ({
   currentRoom,
@@ -175,8 +177,13 @@ const RoomManager: React.FC<RoomManagerProps> = ({
   }
 
   return (
-    <Paper elevation={3} sx={{ p: 3, bgcolor: "#1E1E1E" }}>
-      <Typography variant="h5" gutterBottom sx={{ color: "#90CAF9" }}>
+    <Paper elevation={3} sx={{ p: 3, bgcolor: "background.paper" }}>
+      <Typography
+        variant="h5"
+        gutterBottom
+        sx={{ display: "flex", alignItems: "center", color: "primary.main" }}
+      >
+        <MeetingRoomIcon sx={{ mr: 1 }} />
         Room Manager
       </Typography>
       <Snackbar
@@ -201,7 +208,11 @@ const RoomManager: React.FC<RoomManagerProps> = ({
       {!currentRoom ? (
         <Box>
           <Box sx={{ mb: 3 }}>
-            <Typography variant="h6" gutterBottom sx={{ color: "#E0E0E0" }}>
+            <Typography
+              variant="h6"
+              gutterBottom
+              sx={{ color: "text.primary" }}
+            >
               Create a New Room
             </Typography>
             <TextField
@@ -211,38 +222,14 @@ const RoomManager: React.FC<RoomManagerProps> = ({
               onChange={(e) => setNewRoomName(e.target.value)}
               placeholder="New Room Name"
               margin="normal"
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  "& fieldset": {
-                    borderColor: "#424242",
-                  },
-                  "&:hover fieldset": {
-                    borderColor: "#616161",
-                  },
-                },
-                "& .MuiInputBase-input": {
-                  color: "#E0E0E0",
-                },
-              }}
             />
             <FormControl fullWidth margin="normal">
-              <InputLabel id="language-select-label" sx={{ color: "#E0E0E0" }}>
-                Language
-              </InputLabel>
+              <InputLabel id="language-select-label">Language</InputLabel>
               <Select
                 labelId="language-select-label"
                 value={newRoomLanguage}
                 onChange={(e) => setNewRoomLanguage(e.target.value as string)}
                 label="Language"
-                sx={{
-                  color: "#E0E0E0",
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#424242",
-                  },
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#616161",
-                  },
-                }}
               >
                 <MenuItem value="javascript">JavaScript</MenuItem>
                 <MenuItem value="python">Python</MenuItem>
@@ -255,19 +242,18 @@ const RoomManager: React.FC<RoomManagerProps> = ({
               variant="contained"
               onClick={createRoom}
               startIcon={<AddIcon />}
-              sx={{
-                mt: 2,
-                bgcolor: "#424242",
-                color: "#E0E0E0",
-                "&:hover": { bgcolor: "#616161", color: "#E0E0E0" },
-              }}
+              sx={{ mt: 2 }}
             >
               Create Room
             </Button>
           </Box>
-          <Divider sx={{ my: 3, bgcolor: "#424242" }} />
+          <Divider sx={{ my: 3 }} />
           <Box sx={{ mb: 3 }}>
-            <Typography variant="h6" gutterBottom sx={{ color: "#E0E0E0" }}>
+            <Typography
+              variant="h6"
+              gutterBottom
+              sx={{ color: "text.primary" }}
+            >
               Join a Room
             </Typography>
             <TextField
@@ -277,87 +263,72 @@ const RoomManager: React.FC<RoomManagerProps> = ({
               onChange={(e) => setJoinRoomId(e.target.value)}
               placeholder="6-character Room ID to Join"
               margin="normal"
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  "& fieldset": {
-                    borderColor: "#424242",
-                  },
-                  "&:hover fieldset": {
-                    borderColor: "#616161",
-                  },
-                },
-                "& .MuiInputBase-input": {
-                  color: "#E0E0E0",
-                },
-              }}
             />
             <Button
               fullWidth
               variant="contained"
               onClick={() => joinRoom(joinRoomId)}
               startIcon={<JoinFullIcon />}
-              sx={{
-                mt: 2,
-                bgcolor: "#424242",
-                color: "#E0E0E0",
-                "&:hover": { bgcolor: "#616161", color: "#E0E0E0" },
-              }}
+              sx={{ mt: 2 }}
             >
               Join Room
             </Button>
           </Box>
-          <Divider sx={{ my: 3, bgcolor: "#424242" }} />
+          <Divider sx={{ my: 3 }} />
           <Box>
-            <Typography variant="h6" gutterBottom sx={{ color: "#E0E0E0" }}>
+            <Typography
+              variant="h6"
+              gutterBottom
+              sx={{ color: "text.primary" }}
+            >
               Available Rooms
             </Typography>
             <List>
               {rooms.map((room) => (
-                <ListItem
-                  key={room.id}
-                  divider
-                  sx={{ borderBottomColor: "#424242" }}
-                >
+                <ListItem key={room.id} divider>
                   <ListItemText
                     primary={room.name}
                     secondary={`ID: ${room.id}, Language: ${room.language}`}
-                    primaryTypographyProps={{ color: "#E0E0E0" }}
-                    secondaryTypographyProps={{ color: "#BDBDBD" }}
                   />
                   <ListItemSecondaryAction>
-                    <Button
-                      variant="outlined"
-                      onClick={() => joinRoom(room.id)}
-                      size="small"
-                      sx={{ color: "#90CAF9", borderColor: "#90CAF9", mr: 1 }}
-                    >
-                      Join
-                    </Button>
-                    <IconButton
-                      edge="end"
-                      aria-label="delete"
-                      onClick={() => {
-                        setRoomToDelete(room.id);
-                        setDeleteDialogOpen(true);
-                      }}
-                      sx={{ color: "#F44336" }}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
+                    <Tooltip title="Join Room">
+                      <IconButton
+                        edge="end"
+                        aria-label="join"
+                        onClick={() => joinRoom(room.id)}
+                        sx={{ mr: 1 }}
+                      >
+                        <JoinFullIcon />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Delete Room">
+                      <IconButton
+                        edge="end"
+                        aria-label="delete"
+                        onClick={() => {
+                          setRoomToDelete(room.id);
+                          setDeleteDialogOpen(true);
+                        }}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </Tooltip>
                   </ListItemSecondaryAction>
                 </ListItem>
               ))}
             </List>
             <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
-              <IconButton onClick={fetchRooms} sx={{ color: "#90CAF9" }}>
-                <RefreshIcon />
-              </IconButton>
+              <Tooltip title="Refresh Room List">
+                <IconButton onClick={fetchRooms} color="primary">
+                  <RefreshIcon />
+                </IconButton>
+              </Tooltip>
             </Box>
           </Box>
         </Box>
       ) : (
         <Box>
-          <Typography variant="body1" gutterBottom sx={{ color: "#E0E0E0" }}>
+          <Typography variant="body1" gutterBottom>
             Current Room: {currentRoom}
           </Typography>
           <Button
@@ -365,11 +336,8 @@ const RoomManager: React.FC<RoomManagerProps> = ({
             variant="contained"
             onClick={leaveRoom}
             startIcon={<ExitToAppIcon />}
-            sx={{
-              mt: 2,
-              bgcolor: "#D32F2F",
-              "&:hover": { bgcolor: "#C62828" },
-            }}
+            color="error"
+            sx={{ mt: 2 }}
           >
             Leave Room
           </Button>
@@ -389,9 +357,7 @@ const RoomManager: React.FC<RoomManagerProps> = ({
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)} color="primary">
-            Cancel
-          </Button>
+          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
           <Button
             onClick={() => roomToDelete && deleteRoom(roomToDelete)}
             color="error"
