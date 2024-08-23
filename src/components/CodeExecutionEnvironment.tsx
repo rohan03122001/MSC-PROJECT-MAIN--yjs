@@ -38,12 +38,24 @@ const CodeExecutionEnvironment: React.FC<CodeExecutionEnvironmentProps> = ({
     setLoading(true);
     setError(null);
     try {
+      // Add language-specific settings
+      let languageSettings = {};
+      if (language === "python") {
+        languageSettings = { language_id: 71 };
+      } else if (language === "java") {
+        languageSettings = { language_id: 62, stdin: "" };
+      } else if (language === "go") {
+        languageSettings = { language_id: 60 };
+      } else {
+        // Default to JavaScript
+        languageSettings = { language_id: 63 };
+      }
+
       const response = await axios.post(
         "https://judge0-ce.p.rapidapi.com/submissions",
         {
           source_code: code,
-          language_id: languageIds[language],
-          stdin: "",
+          ...languageSettings,
         },
         {
           headers: {
@@ -79,7 +91,6 @@ const CodeExecutionEnvironment: React.FC<CodeExecutionEnvironmentProps> = ({
       setLoading(false);
     }
   };
-
   return (
     <Box sx={{ mt: 2 }}>
       <Button
