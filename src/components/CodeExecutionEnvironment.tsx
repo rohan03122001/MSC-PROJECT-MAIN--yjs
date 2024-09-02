@@ -38,7 +38,7 @@ const CodeExecutionEnvironment: React.FC<CodeExecutionEnvironmentProps> = ({
     setLoading(true);
     setError(null);
     try {
-      // Add language-specific settings
+      //language-specific settings
       let languageSettings = {};
       if (language === "python") {
         languageSettings = { language_id: 71 };

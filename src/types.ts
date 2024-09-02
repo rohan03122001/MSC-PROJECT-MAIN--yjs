@@ -1,4 +1,4 @@
-// types.ts
+
 
 import { User } from "@supabase/supabase-js";
 
@@ -59,12 +59,12 @@ export interface AuthContextType {
   loading: boolean;
 }
 
-// Add this type for any errors
+
 export type ErrorWithMessage = {
   message: string;
 };
 
-// Add this type guard
+
 export function isErrorWithMessage(error: unknown): error is ErrorWithMessage {
   return (
     typeof error === "object" &&
@@ -74,20 +74,19 @@ export function isErrorWithMessage(error: unknown): error is ErrorWithMessage {
   );
 }
 
-// Add this helper function
+
 export function toErrorWithMessage(maybeError: unknown): ErrorWithMessage {
   if (isErrorWithMessage(maybeError)) return maybeError;
 
   try {
     return new Error(JSON.stringify(maybeError));
   } catch {
-    // fallback in case there's an error stringifying the maybeError
-    // like with circular references for example.
+    
     return new Error(String(maybeError));
   }
 }
 
-// Add this helper function
+
 export function getErrorMessage(error: unknown) {
   return toErrorWithMessage(error).message;
 }

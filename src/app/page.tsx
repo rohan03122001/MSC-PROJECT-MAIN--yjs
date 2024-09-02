@@ -31,7 +31,7 @@ export default function Home() {
   }
 
   if (user) {
-    return null; // This will prevent a flash of content before redirecting
+    return null; 
   }
 
   return (

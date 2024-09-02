@@ -97,7 +97,7 @@ function CollaborativeEditor({
         ytext.insert(0, data.snapshot);
       }
 
-      // Update local state when the shared document changes
+      
       ytext.observe(() => {
         setCode(ytext.toString());
       });

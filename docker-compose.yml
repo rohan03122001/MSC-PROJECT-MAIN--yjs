@@ -1,11 +1,6 @@
 version: "3"
 
 services:
-#   ion-sfu:
-#     image: pionwebrtc/ion-sfu:latest-jsonrpc
-#     ports:
-#       - "7000:7000"
-#       - "5000-5200:5000-5200/udp"
 
   websocket-server:
     image: rohanpro5/collabcode-websocket-server

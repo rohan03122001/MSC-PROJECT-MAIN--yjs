@@ -34,7 +34,7 @@ body {
   background: var(--secondary-color);
 }
 
-/* Styles for remote selection in collaborative editing */
+/*collaborative editing */
 .yRemoteSelection {
   background-color: rgba(250, 129, 0, 0.5);
 }
@@ -66,7 +66,7 @@ body {
   animation: fadeInOut 2s ease-in-out;
 }
 
-/* Custom styles for MUI components */
+/* MUI components */
 .MuiButton-root {
   text-transform: none;
 }
