@@ -74,7 +74,7 @@ class IonSfuClient {
   onTrack(callback) {
     console.log("IonSfuClient: Adding onTrack callback");
     this.onTrackCallbacks.push(callback);
-    // Call the callback for all existing streams
+    
     this.streams.forEach((stream) => {
       stream.getTracks().forEach((track) => callback(track, stream));
     });

@@ -1,4 +1,3 @@
-// app/auth/page.tsx
 "use client";
 
 import Auth from "@/components/Auth";

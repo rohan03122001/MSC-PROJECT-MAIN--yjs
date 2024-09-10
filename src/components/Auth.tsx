@@ -12,6 +12,7 @@ import {
   CircularProgress,
   Paper,
   useTheme,
+  Divider,
 } from "@mui/material";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 
@@ -102,6 +103,10 @@ const Auth: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+  const handleDemoLogin = () => {
+    setEmail("test1@gmail.com");
+    setPassword("Test1@123");
   };
 
   return (
@@ -252,6 +257,34 @@ const Auth: React.FC = () => {
                   {isSignUp ? "Sign In" : "Sign Up"}
                 </Button>
               </Typography>
+            </Box>
+
+            <Divider sx={{ my: 2 }} />
+
+            <Box sx={{ mt: 2, textAlign: "center" }}>
+              <Typography variant="body2" sx={{ color: "text.secondary", mb: 1 }}>
+                Demo Account:
+              </Typography>
+              <Typography variant="body2" sx={{ color: "text.primary" }}>
+                Email: test1@gmail.com
+              </Typography>
+              <Typography variant="body2" sx={{ color: "text.primary", mb: 2 }}>
+                Password: Test1@123
+              </Typography>
+              <Button
+                onClick={handleDemoLogin}
+                variant="outlined"
+                fullWidth
+                sx={{
+                  color: "secondary.main",
+                  borderColor: "secondary.main",
+                  "&:hover": {
+                    bgcolor: "rgba(255, 167, 38, 0.08)",
+                  },
+                }}
+              >
+                Use Demo Account
+              </Button>
             </Box>
           </Box>
         </Box>

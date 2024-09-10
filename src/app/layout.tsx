@@ -1,4 +1,3 @@
-// app/layout.tsx
 "use client";
 import { useEffect } from "react";
 import "./globals.css";
